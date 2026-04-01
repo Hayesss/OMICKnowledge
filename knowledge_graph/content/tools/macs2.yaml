@@ -1,0 +1,31 @@
+id: macs2
+name: MACS2
+type: tool
+description: 最常用的 ChIP-seq 和 ATAC-seq peak calling 工具，支持 narrow、broad 和 gapped peak 模型。
+difficulty: beginner
+tags: ["atac-seq", "cut-tag", "peak-calling"]
+source: manual
+last_updated: "2026-04-01"
+version: "2.2.9.1"
+install_cmd: "pip install MACS2"
+doc_url: "https://github.com/macs3-project/MACS"
+pros:
+  - 社区广泛使用，文档丰富
+  - 支持多种 peak 模型
+  - 可生成 bedGraph 用于可视化
+cons:
+  - 对 CUT&Tag 数据可能需要调整参数
+  - 大样本运行时内存占用较高
+key_params:
+  - name: -q
+    description: q-value 阈值
+    default: "0.05"
+  - name: --nomodel
+    description: 跳过模型构建，适用于 ATAC-seq
+    default: "false"
+  - name: --shift
+    description:  reads 偏移量
+    default: "-75"
+  - name: --extsize
+    description: 扩展片段大小
+    default: "150"

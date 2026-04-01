@@ -1,0 +1,8 @@
+id: preprocessing
+name: 数据预处理
+type: stage
+description: 对原始测序数据进行质量控制、比对和过滤，为后续分析准备干净的 BAM 文件。
+difficulty: beginner
+tags: ["atac-seq", "preprocessing", "qc"]
+source: manual
+last_updated: "2026-04-01"

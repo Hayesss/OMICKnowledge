@@ -1,0 +1,10 @@
+id: macs2-doc
+name: MACS2 官方文档
+type: resource
+description: MACS2 GitHub 仓库和用户使用手册
+difficulty: beginner
+tags: ["macs2", "peak-calling", "documentation"]
+source: manual
+last_updated: "2026-04-01"
+url: "https://github.com/macs3-project/MACS"
+resource_type: documentation

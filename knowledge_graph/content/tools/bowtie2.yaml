@@ -1,0 +1,24 @@
+id: bowtie2
+name: Bowtie2
+type: tool
+description: 快速且内存高效的短序列比对工具，广泛用于 ATAC-seq 和 ChIP-seq 数据的比对。
+difficulty: beginner
+tags: ["atac-seq", "alignment", "cut-tag"]
+source: manual
+last_updated: "2026-04-01"
+version: "2.5.1"
+install_cmd: "conda install -c bioconda bowtie2"
+doc_url: "https://bowtie-bio.sourceforge.net/bowtie2/manual.shtml"
+pros:
+  - 比对速度快
+  - 支持局部比对和嵌合比对
+  - 内存占用相对较低
+cons:
+  - 对长 reads 支持不如 BWA-MEM
+key_params:
+  - name: -X
+    description: 最大插入片段大小
+    default: "1000"
+  - name: --very-sensitive
+    description: 使用高灵敏度预设参数
+    default: "false"

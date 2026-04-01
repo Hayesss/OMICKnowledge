@@ -1,0 +1,8 @@
+id: peak-calling
+name: Peak Calling
+type: stage
+description: 从比对结果中识别染色质开放区域（peaks），是 ATAC-seq 分析的核心步骤。
+difficulty: intermediate
+tags: ["atac-seq", "peak-calling", "regulatory-elements"]
+source: manual
+last_updated: "2026-04-01"

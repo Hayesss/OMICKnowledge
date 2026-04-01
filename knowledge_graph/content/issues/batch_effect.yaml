@@ -1,0 +1,15 @@
+id: batch-effect
+name: 批次效应
+type: issue
+description: 由于实验时间、操作人员、试剂批次等非生物学因素导致的数据系统性差异。
+difficulty: intermediate
+tags: ["atac-seq", "scRNA-seq", "qc", "multi-sample"]
+source: manual
+last_updated: "2026-04-01"
+solution: |
+  1. 实验设计阶段尽量平衡批次因素
+  2. 分析阶段使用批次校正工具（如 ComBat, Harmony, MNN）
+  3. 在质控和可视化中检查批次效应是否被有效去除
+related_tools:
+  - harmony
+  - combat

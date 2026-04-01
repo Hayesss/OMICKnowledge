@@ -1,0 +1,14 @@
+id: quality-control
+name: 质量控制
+type: step
+description: 评估原始测序数据质量，检查接头污染、测序深度、重复率等指标。
+difficulty: beginner
+tags: ["atac-seq", "qc", "preprocessing"]
+source: manual
+last_updated: "2026-04-01"
+input: "原始 FASTQ 文件"
+output: "质控报告（HTML/TXT）"
+key_params:
+  - name: adapter_sequence
+    description: 接头序列，用于去除接头污染
+    default: "auto-detect"

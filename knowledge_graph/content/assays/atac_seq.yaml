@@ -1,0 +1,8 @@
+id: atac-seq
+name: ATAC-seq
+type: assay
+description: 利用转座酶可及性分析染色质开放区域的高通量测序技术，用于鉴定调控元件和潜在增强子。
+difficulty: intermediate
+tags: ["atac-seq", "epigenomics", "chromatin-accessibility"]
+source: manual
+last_updated: "2026-04-01"

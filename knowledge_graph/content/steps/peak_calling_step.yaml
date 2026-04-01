@@ -1,0 +1,17 @@
+id: peak-calling-step
+name: Peak 识别
+type: step
+description: 使用 peak caller 从 BAM 文件中识别染色质开放区域。
+difficulty: intermediate
+tags: ["atac-seq", "peak-calling"]
+source: manual
+last_updated: "2026-04-01"
+input: "过滤后的 BAM 文件"
+output: "Peak 文件（BED/NarrowPeak）"
+key_params:
+  - name: qvalue
+    description: q-value 阈值
+    default: "0.05"
+  - name: nomodel
+    description: 是否跳过模型构建
+    default: "false"

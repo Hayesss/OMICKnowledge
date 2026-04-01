@@ -1,0 +1,8 @@
+id: annotation
+name: 注释与解读
+type: stage
+description: 对鉴定出的 peaks 进行基因组注释，关联到附近的基因和调控元件。
+difficulty: intermediate
+tags: ["atac-seq", "annotation", "functional-analysis"]
+source: manual
+last_updated: "2026-04-01"

@@ -1,0 +1,14 @@
+id: peak-annotation
+name: Peak 注释
+type: step
+description: 将 peaks 注释到最近的基因和调控元件，分析其功能富集。
+difficulty: intermediate
+tags: ["atac-seq", "annotation"]
+source: manual
+last_updated: "2026-04-01"
+input: "Peak 文件（BED）"
+output: "注释结果表"
+key_params:
+  - name: tss_distance
+    description: 距离 TSS 的最大范围
+    default: "3000"

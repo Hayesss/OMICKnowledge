@@ -1,0 +1,14 @@
+id: alignment
+name: 序列比对
+type: step
+description: 将过滤后的 reads 比对到参考基因组，生成 BAM 文件。
+difficulty: beginner
+tags: ["atac-seq", "alignment", "preprocessing"]
+source: manual
+last_updated: "2026-04-01"
+input: "过滤后的 FASTQ 文件"
+output: "BAM 文件"
+key_params:
+  - name: max_insert_size
+    description: 最大插入片段大小
+    default: "1000"

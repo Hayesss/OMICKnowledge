@@ -1,0 +1,58 @@
+edges:
+  - source: atac-seq
+    relation: has_stage
+    target: preprocessing
+  - source: atac-seq
+    relation: has_stage
+    target: peak-calling
+  - source: atac-seq
+    relation: has_stage
+    target: annotation
+  - source: preprocessing
+    relation: has_step
+    target: quality-control
+  - source: preprocessing
+    relation: has_step
+    target: alignment
+  - source: peak-calling
+    relation: has_step
+    target: peak-calling-step
+  - source: annotation
+    relation: has_step
+    target: peak-annotation
+  - source: quality-control
+    relation: prerequisite_for
+    target: alignment
+  - source: alignment
+    relation: prerequisite_for
+    target: peak-calling-step
+  - source: peak-calling-step
+    relation: prerequisite_for
+    target: peak-annotation
+  - source: alignment
+    relation: uses_tool
+    target: bowtie2
+    properties:
+      recommended: true
+      note: ATAC-seq 比对首选
+  - source: peak-calling-step
+    relation: uses_tool
+    target: macs2
+    properties:
+      recommended: true
+      note: ATAC-seq peak calling 金标准
+  - source: quality-control
+    relation: requires_concept
+    target: fragment-size
+  - source: peak-calling-step
+    relation: requires_concept
+    target: fdr
+  - source: alignment
+    relation: has_issue
+    target: batch-effect
+  - source: macs2
+    relation: has_resource
+    target: macs2-doc
+  - source: macs2
+    relation: applies_to
+    target: atac-seq
