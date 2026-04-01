@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多组学分析知识图谱</title>
+  <link rel="stylesheet" href="static/css/style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dagre@0.8.5/dist/dagre.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-dagre@0.1.2/dist/d3-dagre.min.js"></script>
+</head>
+<body>
+  <header class="top-bar">
+    <div class="logo">多组学知识图谱</div>
+    <nav class="view-switcher">
+      <button id="btn-network" class="active">网络视图</button>
+      <button id="btn-flow">流程视图</button>
+    </nav>
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="搜索节点...">
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <aside class="left-panel">
+      <h3>筛选器</h3>
+      
+      <div class="filter-group">
+        <h4>实体类型</h4>
+        <div id="filter-types"></div>
+      </div>
+      
+      <div class="filter-group">
+        <h4>组学标签</h4>
+        <div id="filter-tags"></div>
+      </div>
+      
+      <div class="filter-group">
+        <h4>难度等级</h4>
+        <div id="filter-difficulty">
+          <label><input type="radio" name="difficulty" value="all" checked> 全部</label>
+          <label><input type="radio" name="difficulty" value="beginner"> 入门</label>
+          <label><input type="radio" name="difficulty" value="intermediate"> 进阶</label>
+          <label><input type="radio" name="difficulty" value="advanced"> 高级</label>
+        </div>
+      </div>
+    </aside>
+
+    <main class="viz-container">
+      <svg id="viz-svg"></svg>
+    </main>
+
+    <aside class="right-panel" id="detail-panel">
+      <div class="empty-state">
+        <p>点击节点查看详情</p>
+      </div>
+    </aside>
+  </div>
+
+  <script src="static/js/network_view.js"></script>
+  <script src="static/js/flow_view.js"></script>
+  <script src="static/js/search_filter.js"></script>
+  <script src="static/js/app.js"></script>
+</body>
+</html>
