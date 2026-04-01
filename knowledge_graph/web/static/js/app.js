@@ -1,5 +1,15 @@
 let app = null;
 
+function escapeHtml(text) {
+  if (text == null) return '';
+  return text.toString()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const response = await fetch('data/graph.json');
   const graphData = await response.json();
@@ -140,7 +150,7 @@ class App {
       incoming.forEach(e => {
         const src = this.data.nodes.find(n => n.id === e.source);
         if (src) {
-          extraHtml += `<div class="related-node" onclick="app.showDetailById('${src.id}')">${src.name} <span style="color:#9ca3af">(${e.relation})</span></div>`;
+          extraHtml += `<div class="related-node" onclick="app.showDetailById('${escapeHtml(src.id)}')">${escapeHtml(src.name)} <span style="color:#9ca3af">(${e.relation})</span></div>`;
         }
       });
       extraHtml += `</div>`;
@@ -151,7 +161,7 @@ class App {
       outgoing.forEach(e => {
         const tgt = this.data.nodes.find(n => n.id === e.target);
         if (tgt) {
-          extraHtml += `<div class="related-node" onclick="app.showDetailById('${tgt.id}')">${tgt.name} <span style="color:#9ca3af">(${e.relation})</span></div>`;
+          extraHtml += `<div class="related-node" onclick="app.showDetailById('${escapeHtml(tgt.id)}')">${escapeHtml(tgt.name)} <span style="color:#9ca3af">(${e.relation})</span></div>`;
         }
       });
       extraHtml += `</div>`;
@@ -161,15 +171,15 @@ class App {
       <div class="detail-header">
         <span class="detail-type ${typeClass}">${this.typeLabel(node.type)}</span>
         <span class="difficulty-badge ${diffClass}">${this.diffLabel(node.difficulty)}</span>
-        <h2>${node.name}</h2>
+        <h2>${escapeHtml(node.name)}</h2>
       </div>
       <div class="detail-section">
         <h4>描述</h4>
-        <p>${node.description}</p>
+        <p>${escapeHtml(node.description)}</p>
       </div>
       <div class="detail-section">
         <h4>标签</h4>
-        <p>${(node.tags || []).map(t => `<span style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:12px;margin-right:4px;">${t}</span>`).join('') || '无'}</p>
+        <p>${(node.tags || []).map(t => `<span style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:12px;margin-right:4px;">${escapeHtml(t)}</span>`).join('') || '无'}</p>
       </div>
       ${extraHtml}
     `;
@@ -181,16 +191,16 @@ class App {
   }
 
   renderSection(title, content) {
-    return `<div class="detail-section"><h4>${title}</h4><p>${content}</p></div>`;
+    return `<div class="detail-section"><h4>${escapeHtml(title)}</h4><p>${escapeHtml(content)}</p></div>`;
   }
 
   renderListSection(title, items) {
-    return `<div class="detail-section"><h4>${title}</h4><ul>${items.map(i => `<li>${i}</li>`).join('')}</ul></div>`;
+    return `<div class="detail-section"><h4>${escapeHtml(title)}</h4><ul>${items.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul></div>`;
   }
 
   renderParamsSection(title, params) {
-    const rows = params.map(p => `<tr><td style="font-weight:500">${p.name}</td><td>${p.description}</td><td style="color:#6b7280">默认: ${p.default}</td></tr>`).join('');
-    return `<div class="detail-section"><h4>${title}</h4><table style="width:100%;font-size:12px;border-collapse:collapse"><tbody>${rows}</tbody></table></div>`;
+    const rows = params.map(p => `<tr><td style="font-weight:500">${escapeHtml(p.name)}</td><td>${escapeHtml(p.description)}</td><td style="color:#6b7280">默认: ${escapeHtml(p.default)}</td></tr>`).join('');
+    return `<div class="detail-section"><h4>${escapeHtml(title)}</h4><table style="width:100%;font-size:12px;border-collapse:collapse"><tbody>${rows}</tbody></table></div>`;
   }
 
   typeLabel(type) {
