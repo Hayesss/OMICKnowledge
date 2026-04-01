@@ -120,6 +120,7 @@ class NetworkView {
   }
 
   highlightNode(selectedNode) {
+    if (!this.nodeElements || !this.linkElements) return;
     const neighborIds = new Set();
     neighborIds.add(selectedNode.id);
     
@@ -138,11 +139,13 @@ class NetworkView {
   }
 
   clearHighlight() {
+    if (!this.nodeElements || !this.linkElements) return;
     this.nodeElements.classed('dimmed', false);
     this.linkElements.classed('dimmed', false).classed('highlighted', false);
   }
 
   filterNodes(filterFn) {
+    if (!this.nodeElements || !this.linkElements) return;
     const visibleIds = new Set(this.nodes.filter(filterFn).map(n => n.id));
     this.nodeElements.style('display', d => visibleIds.has(d.id) ? null : 'none');
     this.linkElements.style('display', d => 
@@ -151,6 +154,7 @@ class NetworkView {
   }
 
   resetFilter() {
+    if (!this.nodeElements || !this.linkElements) return;
     this.nodeElements.style('display', null);
     this.linkElements.style('display', null);
   }
