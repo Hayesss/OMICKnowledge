@@ -1,0 +1,152 @@
+entity_types:
+  assay:
+    label: "实验/数据类型"
+    required_properties:
+      - id
+      - name
+      - type
+      - description
+      - difficulty
+      - tags
+      - source
+      - last_updated
+    optional_properties: []
+
+  stage:
+    label: "分析阶段"
+    required_properties:
+      - id
+      - name
+      - type
+      - description
+      - difficulty
+      - tags
+      - source
+      - last_updated
+    optional_properties: []
+
+  step:
+    label: "具体分析步骤"
+    required_properties:
+      - id
+      - name
+      - type
+      - description
+      - difficulty
+      - tags
+      - source
+      - last_updated
+    optional_properties:
+      - input
+      - output
+      - key_params
+
+  tool:
+    label: "分析工具/软件"
+    required_properties:
+      - id
+      - name
+      - type
+      - description
+      - difficulty
+      - tags
+      - source
+      - last_updated
+    optional_properties:
+      - version
+      - install_cmd
+      - doc_url
+      - pros
+      - cons
+      - key_params
+
+  concept:
+    label: "关键概念/参数"
+    required_properties:
+      - id
+      - name
+      - type
+      - description
+      - difficulty
+      - tags
+      - source
+      - last_updated
+    optional_properties:
+      - detailed_explanation
+      - common_misconceptions
+
+  issue:
+    label: "常见问题/注意事项"
+    required_properties:
+      - id
+      - name
+      - type
+      - description
+      - difficulty
+      - tags
+      - source
+      - last_updated
+    optional_properties:
+      - solution
+      - related_tools
+
+  resource:
+    label: "外部资源"
+    required_properties:
+      - id
+      - name
+      - type
+      - description
+      - difficulty
+      - tags
+      - source
+      - last_updated
+    optional_properties:
+      - url
+      - resource_type
+
+relation_types:
+  has_stage:
+    label: "包含阶段"
+    source_types: [assay]
+    target_types: [stage]
+
+  has_step:
+    label: "包含步骤"
+    source_types: [stage]
+    target_types: [step]
+
+  uses_tool:
+    label: "使用工具"
+    source_types: [step]
+    target_types: [tool]
+
+  requires_concept:
+    label: "需要理解概念"
+    source_types: [step]
+    target_types: [concept]
+
+  has_issue:
+    label: "常见问题"
+    source_types: [step]
+    target_types: [issue]
+
+  has_resource:
+    label: "关联资源"
+    source_types: [assay, stage, step, tool, concept, issue]
+    target_types: [resource]
+
+  alternative_to:
+    label: "替代方案"
+    source_types: [tool]
+    target_types: [tool]
+
+  applies_to:
+    label: "适用于"
+    source_types: [tool]
+    target_types: [assay]
+
+  prerequisite_for:
+    label: "前置步骤"
+    source_types: [step]
+    target_types: [step]
