@@ -6,17 +6,26 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background: #f5f7fa;
-  color: #333;
+  background: var(--color-bg);
+  color: var(--color-text);
   height: 100vh;
   overflow: hidden;
+}
+
+:root {
+  --color-primary: #2563eb;
+  --color-border: #e1e4e8;
+  --color-bg: #f5f7fa;
+  --color-text: #333;
+  --color-muted: #6b7280;
+  --color-link: #2563eb;
 }
 
 /* Top Bar */
 .top-bar {
   height: 56px;
   background: #fff;
-  border-bottom: 1px solid #e1e4e8;
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -27,7 +36,7 @@ body {
 .logo {
   font-size: 18px;
   font-weight: 600;
-  color: #2563eb;
+  color: var(--color-primary);
 }
 
 .view-switcher {
@@ -45,9 +54,9 @@ body {
 }
 
 .view-switcher button.active {
-  background: #2563eb;
+  background: var(--color-primary);
   color: #fff;
-  border-color: #2563eb;
+  border-color: var(--color-primary);
 }
 
 .search-box {
@@ -71,7 +80,7 @@ body {
   max-height: 300px;
   overflow-y: auto;
   background: #fff;
-  border: 1px solid #e1e4e8;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   display: none;
@@ -98,7 +107,7 @@ body {
 .left-panel {
   width: 220px;
   background: #fff;
-  border-right: 1px solid #e1e4e8;
+  border-right: 1px solid var(--color-border);
   padding: 16px;
   overflow-y: auto;
 }
@@ -111,7 +120,7 @@ body {
 
 .left-panel h3 {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--color-muted);
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -150,13 +159,13 @@ body {
 .right-panel {
   width: 320px;
   background: #fff;
-  border-left: 1px solid #e1e4e8;
+  border-left: 1px solid var(--color-border);
   padding: 20px;
   overflow-y: auto;
 }
 
 .empty-state {
-  color: #9ca3af;
+  color: var(--color-muted);
   text-align: center;
   margin-top: 40px;
   font-size: 14px;
@@ -210,7 +219,7 @@ body {
 
 .detail-section h4 {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--color-muted);
   margin-bottom: 8px;
   text-transform: uppercase;
 }
@@ -227,7 +236,7 @@ body {
 }
 
 .detail-section a {
-  color: #2563eb;
+  color: var(--color-link);
   font-size: 13px;
   text-decoration: none;
 }
@@ -269,7 +278,7 @@ body {
 }
 
 .link.highlighted {
-  stroke: #2563eb;
+  stroke: var(--color-primary);
   stroke-opacity: 1;
   stroke-width: 2.5px;
 }
@@ -280,4 +289,19 @@ body {
 
 .link.dimmed {
   opacity: 0.1;
+}
+
+.view-switcher button:focus-visible,
+.search-box input:focus-visible,
+.result-item:focus-visible,
+.related-node:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .left-panel,
+  .right-panel {
+    display: none;
+  }
 }
