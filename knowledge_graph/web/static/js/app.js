@@ -109,8 +109,8 @@ class App {
     
     if (node.type === 'tool') {
       extraHtml += this.renderSection('版本', node.version || '未指定');
-      extraHtml += this.renderSection('安装命令', node.install_cmd ? `<code>${node.install_cmd}</code>` : '未指定');
-      extraHtml += this.renderSection('官方文档', node.doc_url ? `<a href="${node.doc_url}" target="_blank">${node.doc_url}</a>` : '未指定');
+      extraHtml += this.renderSection('安装命令', node.install_cmd ? `<code>${escapeHtml(node.install_cmd)}</code>` : '未指定');
+      extraHtml += this.renderSection('官方文档', node.doc_url ? `<a href="${escapeHtml(node.doc_url)}" target="_blank">${escapeHtml(node.doc_url)}</a>` : '未指定');
       if (node.pros && node.pros.length) {
         extraHtml += this.renderListSection('优点', node.pros);
       }
