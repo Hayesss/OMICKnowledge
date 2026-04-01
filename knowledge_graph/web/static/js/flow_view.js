@@ -1,5 +1,16 @@
+const typeColors = {
+  assay: '#3b82f6',
+  stage: '#22c55e',
+  step: '#f97316',
+  tool: '#ec4899',
+  concept: '#a855f7',
+  issue: '#ef4444',
+  resource: '#14b8a6'
+};
+
 class FlowView {
   constructor(svgSelector, containerSelector) {
+    this.arrowId = `arrow-${Math.random().toString(36).substr(2, 9)}`;
     this.svg = d3.select(svgSelector);
     this.container = document.querySelector(containerSelector);
     this.width = this.container.clientWidth;
@@ -31,17 +42,19 @@ class FlowView {
     
     if (rootAssayId) {
       const visibleIds = new Set([rootAssayId]);
-      let changed = true;
-      while (changed) {
-        changed = false;
-        visibleEdges = flowEdges.filter(e => {
-          if (visibleIds.has(e.source) && !visibleIds.has(e.target)) {
+      const queue = [rootAssayId];
+      while (queue.length) {
+        const id = queue.shift();
+        flowEdges.forEach(e => {
+          if (e.source === id && !visibleIds.has(e.target)) {
             visibleIds.add(e.target);
-            changed = true;
+            queue.push(e.target);
           }
-          return visibleIds.has(e.source) && visibleIds.has(e.target);
         });
       }
+      visibleEdges = flowEdges.filter(e => 
+        visibleIds.has(e.source) && visibleIds.has(e.target)
+      );
       visibleNodes = nodes.filter(n => visibleIds.has(n.id));
     }
     
@@ -64,6 +77,12 @@ class FlowView {
     
     dagre.layout(g);
     
+    const graphWidth = g.graph().width || 0;
+    const graphHeight = g.graph().height || 0;
+    if (graphWidth === 0 || graphHeight === 0) {
+      return;
+    }
+    
     // Draw edges
     const edgeSelection = this.g.append('g')
       .selectAll('path')
@@ -81,11 +100,11 @@ class FlowView {
         return d;
       })
       .attr('fill', 'none')
-      .attr('marker-end', 'url(#arrow)');
+      .attr('marker-end', `url(#${this.arrowId})`);
     
     // Arrow marker
     this.g.append('defs').append('marker')
-      .attr('id', 'arrow')
+      .attr('id', this.arrowId)
       .attr('viewBox', '0 0 10 10')
       .attr('refX', 9)
       .attr('refY', 5)
@@ -134,8 +153,6 @@ class FlowView {
       .attr('font-size', '12px');
     
     // Center the graph
-    const graphWidth = g.graph().width;
-    const graphHeight = g.graph().height;
     const scale = Math.min(
       this.width / (graphWidth + 80),
       this.height / (graphHeight + 80),
