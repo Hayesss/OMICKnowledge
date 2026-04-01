@@ -13,4 +13,4 @@ detailed_explanation: |
   - ~400 bp：双核小体区域
   通过分析 fragment size 分布可以评估 ATAC-seq 数据质量。
 common_misconceptions:
-  - "fragment size 越大越好"（错误，不同大小反映不同生物学状态）
+  - "fragment size 越大越好（错误，不同大小反映不同生物学状态）"
