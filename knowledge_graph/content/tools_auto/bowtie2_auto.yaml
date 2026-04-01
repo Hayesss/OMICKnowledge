@@ -1,0 +1,7 @@
+tool_id: bowtie2
+github_repo: BenLangmead/bowtie2
+fetched_at: '2026-04-01T16:44:07.125450'
+data:
+  latest_version: v2.5.5
+  release_url: https://github.com/BenLangmead/bowtie2/releases/tag/v2.5.5
+  published_at: '2026-02-17T03:48:37Z'
