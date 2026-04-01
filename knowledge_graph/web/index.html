@@ -11,33 +11,33 @@
 </head>
 <body>
   <header class="top-bar">
-    <div class="logo">多组学知识图谱</div>
+    <h1 class="logo">多组学知识图谱</h1>
     <nav class="view-switcher">
-      <button id="btn-network" class="active">网络视图</button>
-      <button id="btn-flow">流程视图</button>
+      <button id="btn-network" class="active" aria-pressed="true">网络视图</button>
+      <button id="btn-flow" aria-pressed="false">流程视图</button>
     </nav>
     <div class="search-box">
       <input type="text" id="search-input" placeholder="搜索节点..." aria-label="搜索节点">
-      <div id="search-results" class="search-results"></div>
+      <div id="search-results" class="search-results" aria-live="polite"></div>
     </div>
   </header>
 
   <div class="main-container">
-    <aside class="left-panel">
-      <h3>筛选器</h3>
+    <aside class="left-panel" aria-label="筛选器">
+      <h2>筛选器</h2>
       
       <div class="filter-group">
-        <h4>实体类型</h4>
+        <h3>实体类型</h3>
         <div id="filter-types"></div>
       </div>
       
       <div class="filter-group">
-        <h4>组学标签</h4>
+        <h3>组学标签</h3>
         <div id="filter-tags"></div>
       </div>
       
       <div class="filter-group">
-        <h4>难度等级</h4>
+        <h3>难度等级</h3>
         <div id="filter-difficulty">
           <label><input type="radio" name="difficulty" value="all" checked> 全部</label>
           <label><input type="radio" name="difficulty" value="beginner"> 入门</label>
@@ -48,10 +48,10 @@
     </aside>
 
     <main class="viz-container">
-      <svg id="viz-svg" aria-label="知识图谱可视化"></svg>
+      <svg id="viz-svg" role="img" aria-label="知识图谱可视化"></svg>
     </main>
 
-    <aside class="right-panel" id="detail-panel">
+    <aside class="right-panel" id="detail-panel" aria-label="节点详情">
       <div class="empty-state">
         <p>点击节点查看详情</p>
       </div>
