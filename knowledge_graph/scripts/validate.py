@@ -46,10 +46,6 @@ def validate_entities(entities, schema):
         for prop in required:
             if prop not in entity:
                 errors.append(f"Entity '{entity_id}': missing required property '{prop}'")
-        for prop in entity:
-            if prop not in allowed and prop not in ('id', 'name', 'type'):
-                # We allow extra properties but warn for typos near allowed ones
-                pass
     return errors
 
 
