@@ -61,10 +61,13 @@ body {
 
 .search-box {
   position: relative;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .search-box input {
   width: 240px;
+  max-width: 100%;
   padding: 8px 12px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
@@ -294,7 +297,8 @@ body {
 .view-switcher button:focus-visible,
 .search-box input:focus-visible,
 .result-item:focus-visible,
-.related-node:focus-visible {
+.related-node:focus-visible,
+.detail-section a:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
