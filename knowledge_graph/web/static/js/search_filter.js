@@ -1,3 +1,21 @@
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 class SearchFilter {
   constructor(graphData) {
     this.data = graphData;
@@ -18,7 +36,7 @@ class SearchFilter {
     const types = [...new Set(this.data.nodes.map(n => n.type))];
     types.forEach(type => {
       const label = document.createElement('label');
-      label.innerHTML = `<input type="checkbox" value="${type}" checked> ${this.typeLabel(type)}`;
+      label.innerHTML = `<input type="checkbox" value="${escapeHtml(type)}" checked> ${escapeHtml(this.typeLabel(type))}`;
       this.filterTypes.appendChild(label);
     });
     
@@ -30,7 +48,7 @@ class SearchFilter {
     const sortedTags = [...allTags].sort();
     sortedTags.forEach(tag => {
       const label = document.createElement('label');
-      label.innerHTML = `<input type="checkbox" value="${tag}"> ${tag}`;
+      label.innerHTML = `<input type="checkbox" value="${escapeHtml(tag)}"> ${escapeHtml(tag)}`;
       this.filterTags.appendChild(label);
     });
     
@@ -73,7 +91,7 @@ class SearchFilter {
   }
 
   initSearch() {
-    this.searchInput.addEventListener('input', () => {
+    const debouncedSearch = debounce(() => {
       const query = this.searchInput.value.trim().toLowerCase();
       if (!query) {
         this.searchResults.style.display = 'none';
@@ -92,7 +110,7 @@ class SearchFilter {
         matches.forEach(node => {
           const div = document.createElement('div');
           div.className = 'result-item';
-          div.innerHTML = `<strong>${node.name}</strong> <span style="color:#9ca3af;font-size:11px;">${this.typeLabel(node.type)}</span>`;
+          div.innerHTML = `<strong>${escapeHtml(node.name)}</strong> <span style="color:#9ca3af;font-size:11px;">${escapeHtml(this.typeLabel(node.type))}</span>`;
           div.addEventListener('click', () => {
             this.searchInput.value = node.name;
             this.searchResults.style.display = 'none';
@@ -104,7 +122,9 @@ class SearchFilter {
         });
       }
       this.searchResults.style.display = 'block';
-    });
+    }, 200);
+    
+    this.searchInput.addEventListener('input', debouncedSearch);
     
     document.addEventListener('click', (e) => {
       if (!this.searchInput.contains(e.target) && !this.searchResults.contains(e.target)) {
