@@ -57,9 +57,39 @@ def test_build_graph_output_file():
     edges = []
     with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
         output_path = f.name
-    build_graph(entities, edges, output_path)
-    with open(output_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    assert len(data['nodes']) == 1
-    assert data['nodes'][0]['name'] == 'MACS2'
-    os.unlink(output_path)
+    try:
+        build_graph(entities, edges, output_path)
+        with open(output_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        assert len(data['nodes']) == 1
+        assert data['nodes'][0]['name'] == 'MACS2'
+    finally:
+        os.unlink(output_path)
+
+
+def test_build_graph_edge_properties():
+    entities = {
+        'step1': {
+            'id': 'step1', 'name': 'Step 1', 'type': 'step',
+            'description': 'test', 'difficulty': 'beginner',
+            'tags': [], 'source': 'manual', 'last_updated': '2026-04-01'
+        },
+        'tool1': {
+            'id': 'tool1', 'name': 'Tool 1', 'type': 'tool',
+            'description': 'test', 'difficulty': 'beginner',
+            'tags': [], 'source': 'manual', 'last_updated': '2026-04-01'
+        }
+    }
+    edges = [
+        {'source': 'step1', 'relation': 'uses_tool', 'target': 'tool1', 'properties': {'recommended': True}}
+    ]
+    graph = build_graph(entities, edges)
+    assert len(graph['edges']) == 1
+    assert graph['edges'][0]['properties'] == {'recommended': True}
+
+    # Test default empty properties
+    edges_no_props = [
+        {'source': 'step1', 'relation': 'uses_tool', 'target': 'tool1'}
+    ]
+    graph2 = build_graph(entities, edges_no_props)
+    assert graph2['edges'][0]['properties'] == {}

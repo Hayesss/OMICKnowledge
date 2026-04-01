@@ -9,6 +9,16 @@ from validate import load_entities
 
 
 def build_graph(entities, edges, output_path=None):
+    """Build a graph structure from entities and edges.
+    
+    Args:
+        entities: Dict mapping entity_id -> entity dict
+        edges: List of edge dicts with source, target, relation, optional properties
+        output_path: Optional path to write JSON output
+    
+    Returns:
+        Dict with 'nodes' and 'edges' lists
+    """
     nodes = []
     for entity_id, entity in entities.items():
         node = dict(entity)
