@@ -42,7 +42,6 @@ def validate_entities(entities, schema):
         type_schema = schema['entity_types'][entity_type]
         required = set(type_schema.get('required_properties', []))
         optional = set(type_schema.get('optional_properties', []))
-        allowed = required | optional
         for prop in required:
             if prop not in entity:
                 errors.append(f"Entity '{entity_id}': missing required property '{prop}'")
