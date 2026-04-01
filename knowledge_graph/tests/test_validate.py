@@ -1,5 +1,7 @@
 import os
 import sys
+import tempfile
+import yaml
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'scripts'))
 
@@ -94,8 +96,6 @@ def test_validate_edges_missing_relation():
 
 
 def test_load_entities_duplicate_id():
-    import tempfile
-    import yaml
     with tempfile.TemporaryDirectory() as tmpdir:
         subdir = os.path.join(tmpdir, 'test')
         os.makedirs(subdir)
