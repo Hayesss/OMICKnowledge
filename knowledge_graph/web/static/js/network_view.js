@@ -28,13 +28,29 @@ class NetworkView {
     this.edges = [];
     this.nodeElements = null;
     this.linkElements = null;
-    this.labelElements = null;
+
+    this.svg.on('click', () => {
+      this.clearHighlight();
+    });
   }
 
   render(graphData) {
+    if (this.simulation) {
+      this.simulation.stop();
+    }
     this.nodes = graphData.nodes.map(n => ({...n}));
     this.edges = graphData.edges.map(e => ({...e}));
-    
+
+    // Compute link counts for node sizing
+    const linkCounts = {};
+    this.edges.forEach(e => {
+      linkCounts[e.source] = (linkCounts[e.source] || 0) + 1;
+      linkCounts[e.target] = (linkCounts[e.target] || 0) + 1;
+    });
+    this.nodes.forEach(n => {
+      n.links = linkCounts[n.id] || 0;
+    });
+
     this.g.selectAll('*').remove();
     
     this.simulation = d3.forceSimulation(this.nodes)
@@ -91,11 +107,7 @@ class NetworkView {
       .text(d => d.name);
     
     this.nodeElements = nodeGroup;
-    
-    this.svg.on('click', () => {
-      this.clearHighlight();
-    });
-    
+
     this.simulation.on('tick', () => {
       this.linkElements
         .attr('x1', d => d.source.x)
@@ -144,6 +156,7 @@ class NetworkView {
   }
 
   resize() {
+    if (!this.simulation) return;
     this.width = this.container.clientWidth;
     this.height = this.container.clientHeight;
     this.simulation.force('center', d3.forceCenter(this.width / 2, this.height / 2));
