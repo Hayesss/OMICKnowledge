@@ -1,0 +1,18 @@
+id: doublets
+name: 双细胞（Doublets）
+type: issue
+description: 两个或多个细胞在液滴或微孔中被同时捕获并测序，导致其表达谱被错误地视为一个细胞。
+difficulty: intermediate
+tags: ["scRNA-seq", "qc", "artifacts"]
+source: manual
+last_updated: "2026-04-02"
+solution: |
+  1. 实验层面：优化细胞加载密度，减少双细胞形成概率
+  2. 计算层面：使用 DoubletFinder、Scrublet、Solo 或 ScDblFinder 等算法检测并移除双细胞
+  3. 分析层面：在聚类后检查是否存在跨细胞类型的"混合"簇，进一步验证双细胞去除效果
+related_tools:
+  - seurat
+detailed_explanation: |
+  双细胞是 scRNA-seq 中最常见的技术噪音之一，会严重影响细胞聚类和差异分析的准确性。双细胞通常表现为：检测到的基因数（nFeature）和总 UMI 数（nCount）异常高；表达谱呈现两种不同细胞类型的混合特征。
+  常用的双细胞检测算法包括：Scrublet（基于模拟双细胞和最近邻分类）、DoubletFinder（基于 pN-pK 参数优化的聚类预测）、Solo（基于深度生成模型）和 ScDblFinder（综合多种方法，准确率高且运行快）。
+  双细胞去除应在质控之后、聚类之前进行。对于不同实验平台，双细胞率的经验值约为：10x Genomics ~ 3.9% per 1000 cells loaded。研究者应根据实验设计和细胞数量合理估计并设定去除阈值。

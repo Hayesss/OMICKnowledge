@@ -1,0 +1,15 @@
+id: scrna-clustering
+name: 聚类与注释
+type: stage
+description: 对 scRNA-seq 表达矩阵进行降维、聚类和细胞类型注释，揭示细胞异质性。
+difficulty: advanced
+tags: ["scRNA-seq", "clustering", "visualization"]
+source: manual
+last_updated: "2026-04-02"
+detailed_explanation: |
+  聚类与注释是 scRNA-seq 分析的核心环节，旨在将大量单细胞按转录组相似性分组，并赋予生物学身份（细胞类型或状态）。标准流程包括：
+  1) 高变基因选择：筛选在不同细胞间表达差异最大的基因，减少噪音干扰；
+  2) 线性降维（PCA）：将高维表达矩阵投影到低维空间，保留主要变异；
+  3) 非线性降维（UMAP/t-SNE）：将细胞在二维/三维空间中可视化，保持局部邻域结构的同时拉开不同群体的距离；
+  4) 图-based 聚类（如 Louvain/Leiden 算法）：基于细胞间的共享最近邻（SNN）图结构识别细胞亚群；
+  5) 细胞类型注释：通过已知标记基因（marker genes）的表达模式，将聚类结果映射到经典细胞类型（如 T cell, B cell, macrophage）。自动注释工具（如 SingleR、CellTypist）可以辅助这一过程，但手工校验仍不可或缺。

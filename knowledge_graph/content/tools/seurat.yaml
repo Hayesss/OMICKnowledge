@@ -1,0 +1,28 @@
+id: seurat
+name: Seurat
+type: tool
+description: R 语言中最流行的单细胞转录组数据分析工具包，提供完整的质控、归一化、降维、聚类和可视化流程。
+difficulty: intermediate
+tags: ["scRNA-seq", "R", "clustering", "visualization"]
+source: manual
+last_updated: "2026-04-02"
+version: "5.0.1"
+install_cmd: "install.packages('Seurat')"
+doc_url: "https://satijalab.org/seurat/"
+pros:
+  - 功能全面，文档和社区极其丰富
+  - 支持多种数据整合和批次校正方法（CCA, RPCA, Harmony）
+  - 提供交互式可视化工具和拟时序分析模块
+cons:
+  - R 环境依赖较多，大数据集内存占用大
+  - 部分高级功能需要安装额外的包
+key_params:
+  - name: dims
+    description: 用于聚类和 UMAP 的主成分维度
+    default: "1:30"
+  - name: resolution
+    description: 聚类分辨率
+    default: "0.8"
+detailed_explanation: |
+  Seurat 是由 Satija Lab 开发的 R 包，是目前单细胞领域引用率最高、生态最完善的数据分析工具。其核心工作流包括：CreateSeuratObject、QC 过滤、Normalization、FindVariableFeatures、ScaleData、RunPCA、RunUMAP、FindNeighbors、FindClusters 和 FindAllMarkers。
+  Seurat v5 引入了基于 sketch 的集成分析（sketch-based integration），可以在不损失精度的前提下分析百万级细胞的数据集。此外，Seurat 还提供了丰富的扩展功能，包括空间转录组分析（Seurat v5 + SCTransform）、多模态分析（CITE-seq, scATAC+RNA）和转录调控网络推断（SCENIC）。

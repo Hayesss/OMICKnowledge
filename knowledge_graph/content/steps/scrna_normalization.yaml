@@ -1,0 +1,21 @@
+id: scrna-normalization
+name: 归一化与特征选择
+type: step
+description: 消除测序深度差异，选择高变基因，为降维和聚类做准备。
+difficulty: intermediate
+tags: ["scRNA-seq", "normalization", "feature-selection"]
+source: manual
+last_updated: "2026-04-02"
+input: "过滤后的表达矩阵"
+output: "归一化后的高变基因矩阵"
+key_params:
+  - name: n_features
+    description: 选择的高变基因数量
+    default: "2000"
+  - name: normalization_method
+    description: 归一化方法
+    default: "LogNormalize"
+detailed_explanation: |
+  由于不同细胞的测序深度和捕获效率存在差异，原始 UMI 计数不能直接比较。归一化的目标是消除这些技术性差异，同时保留生物学变异。
+  常用方法包括：1) 文库大小归一化（CPM、 scran pool-based normalization）；2) Log 变换（log1p）；3) 高变基因选择（vst、mean.var.plot），通常选取 2000 个高变基因用于下游 PCA 和聚类。
+  近年来，基于深度学习的归一化方法（如 scVI、DCA）也逐渐流行，它们能同时处理批次效应、dropout 和过离散问题。

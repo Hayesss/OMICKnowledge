@@ -1,0 +1,20 @@
+#!/bin/bash
+# Post-merge hook: 合并后自动构建
+
+echo "🔄 Post-merge hook..."
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_ROOT"
+
+# 检查是否有内容变更
+if git diff-tree --no-commit-id --name-only -r HEAD | grep -qE '^content/|^edges/|^schema/'; then
+    echo "📄 Content changes detected after merge"
+    
+    if command -v pixi &> /dev/null; then
+        echo "🔨 Building..."
+        pixi run build-memory &
+        echo "⏳ Build started in background"
+    fi
+fi
+
+exit 0

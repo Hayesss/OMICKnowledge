@@ -1,0 +1,47 @@
+#!/bin/bash
+# Pre-commit hook: 提交前自动校验内容
+
+echo "🔍 Running pre-commit checks..."
+
+# 获取项目根目录
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_ROOT"
+
+# 检查是否有 YAML 文件变更
+if git diff --cached --name-only | grep -qE '^content/.*\.yaml$|^edges/.*\.yaml$'; then
+    echo "📄 YAML files changed, running validation..."
+    
+    # 检查 pixi 是否可用
+    if ! command -v pixi &> /dev/null; then
+        echo "⚠️  pixi not found, skipping validation"
+        exit 0
+    fi
+    
+    # 运行校验
+    if ! pixi run validate; then
+        echo "❌ Validation failed!"
+        echo "Please fix the errors before committing."
+        exit 1
+    fi
+    
+    echo "✅ Validation passed"
+fi
+
+# 检查 Python 文件语法
+if git diff --cached --name-only | grep -qE '\.py$'; then
+    echo "🐍 Checking Python syntax..."
+    
+    for file in $(git diff --cached --name-only | grep '\.py$'); do
+        if [ -f "$file" ]; then
+            if ! python -m py_compile "$file" 2>/dev/null; then
+                echo "❌ Syntax error in $file"
+                exit 1
+            fi
+        fi
+    done
+    
+    echo "✅ Python syntax OK"
+fi
+
+echo "✅ Pre-commit checks passed"
+exit 0

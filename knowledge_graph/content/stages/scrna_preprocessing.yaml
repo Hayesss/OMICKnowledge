@@ -1,0 +1,12 @@
+id: scrna-preprocessing
+name: 数据预处理
+type: stage
+description: 对 scRNA-seq 原始数据进行比对、定量、质控和过滤，获得高质量表达矩阵。
+difficulty: intermediate
+tags: ["scRNA-seq", "preprocessing", "qc"]
+source: manual
+last_updated: "2026-04-02"
+detailed_explanation: |
+  scRNA-seq 数据预处理是决定下游分析可靠性的关键步骤。对于 10x Genomics 数据，通常使用 Cell Ranger 进行 demultiplexing、基因组比对（基于 STAR）、基因定量并生成基因-条形码表达矩阵（feature-barcode matrix）。
+  质控环节需要过滤低质量细胞：1) 检测到的基因数（nFeature）过少（可能为空液滴/死细胞）或过多（可能是双细胞）；2) 线粒体基因比例过高（通常 >5-10% 提示细胞膜破裂、细胞质 RNA 流失）；3) 总 UMI 数（nCount）异常。常用阈值因组织类型和实验平台而异。
+  此外，需要根据空液滴和双细胞检测算法（如 EmptyDrops、DoubletFinder/Scrublet）进一步过滤。最终获得一个相对干净的高维稀疏表达矩阵，供下游归一化和聚类分析使用。

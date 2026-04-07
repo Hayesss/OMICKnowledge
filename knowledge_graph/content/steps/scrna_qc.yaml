@@ -1,0 +1,21 @@
+id: scrna-qc
+name: 质控与过滤
+type: step
+description: 基于基因数、UMI 数和线粒体比例过滤低质量细胞和双细胞。
+difficulty: beginner
+tags: ["scRNA-seq", "qc", "preprocessing"]
+source: manual
+last_updated: "2026-04-02"
+input: "原始表达矩阵（h5 / mtx）"
+output: "过滤后的表达矩阵"
+key_params:
+  - name: min_genes
+    description: 每个细胞检测到的最小基因数
+    default: "200"
+  - name: max_mt_percent
+    description: 线粒体基因最大百分比
+    default: "5"
+detailed_explanation: |
+  质控是 scRNA-seq 预处理的首要步骤。由于实验过程中会产生空液滴、死细胞和双细胞，这些低质量数据会严重干扰下游聚类和差异分析。
+  常用过滤标准包括：nFeature_RNA（每个细胞检测到的基因数）在 200-5000 之间；nCount_RNA（总 UMI 数）不过高；percent.mt（线粒体基因比例）< 5-10%。
+  对于双细胞（doublets），需要使用 Scrublet、DoubletFinder 或 Solo 等算法进行检测和去除。高质量质控能显著提高细胞聚类的清晰度和生物学可解释性。

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识图谱 - 语义搜索</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 40px 0;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .search-box {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        #searchInput {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        #searchInput:focus {
+            border-color: #667eea;
+        }
+        
+        #searchBtn {
+            padding: 15px 30px;
+            font-size: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        #searchBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        #searchBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-chip {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: #f5f5f5;
+            border: 2px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .filter-chip:hover {
+            background: #e8e8e8;
+        }
+        
+        .filter-chip.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .stats {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .results {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border-left: 4px solid #667eea;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        
+        .result-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .result-score {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .result-meta {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .result-type {
+            background: #f0f0f0;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .result-tag {
+            background: #e8f4f8;
+            color: #2c5282;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .result-text {
+            color: #555;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+        }
+        
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .empty-state p {
+            opacity: 0.7;
+        }
+        
+        .examples {
+            margin-top: 20px;
+        }
+        
+        .examples h4 {
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+        
+        .example-query {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .example-query:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .detail-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            background: white;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.2);
+            overflow-y: auto;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .detail-panel.open {
+            transform: translateX(0);
+        }
+        
+        .detail-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            position: relative;
+        }
+        
+        .detail-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+        }
+        
+        .detail-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .detail-content {
+            padding: 30px;
+        }
+        
+        .detail-section {
+            margin-bottom: 25px;
+        }
+        
+        .detail-section h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .detail-section p, .detail-section pre {
+            color: #555;
+            line-height: 1.8;
+        }
+        
+        .detail-section pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        
+        .related-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .related-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .related-item:hover {
+            background: #e9ecef;
+        }
+        
+        .related-score {
+            float: right;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            #searchBtn {
+                width: 100%;
+            }
+            
+            .detail-panel {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔬 多组学知识图谱</h1>
+            <p>基于语义向量的智能检索系统 (Karpathy-style Memory Store)</p>
+        </header>
+        
+        <div class="search-box">
+            <div class="input-group">
+                <input type="text" id="searchInput" placeholder="输入问题或关键词，例如："CHIP-seq 数据分析流程"...">
+                <button id="searchBtn" onclick="search()">搜索</button>
+            </div>
+            <div class="filters">
+                <span class="filter-chip active" data-type="">全部</span>
+                <span class="filter-chip" data-type="assay">实验类型</span>
+                <span class="filter-chip" data-type="tool">分析工具</span>
+                <span class="filter-chip" data-type="concept">关键概念</span>
+                <span class="filter-chip" data-type="step">分析步骤</span>
+                <span class="filter-chip" data-type="issue">常见问题</span>
+            </div>
+            <div class="stats" id="stats"></div>
+        </div>
+        
+        <div id="results">
+            <div class="empty-state">
+                <h3>👋 欢迎使用语义知识检索</h3>
+                <p>输入任意问题或关键词，AI 将为您找到最相关的知识条目</p>
+                <div class="examples">
+                    <h4>试试这些例子：</h4>
+                    <span class="example-query" onclick="setQuery('如何分析 CUT&Tag 数据')">如何分析 CUT&Tag 数据</span>
+                    <span class="example-query" onclick="setQuery('ATAC-seq 质控工具推荐')">ATAC-seq 质控工具推荐</span>
+                    <span class="example-query" onclick="setQuery('单细胞聚类算法对比')">单细胞聚类算法对比</span>
+                    <span class="example-query" onclick="setQuery('Hi-C 数据中的 TAD 分析')">Hi-C 数据中的 TAD 分析</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="detail-panel" id="detailPanel">
+        <div class="detail-header">
+            <button class="detail-close" onclick="closeDetail()">×</button>
+            <h2 id="detailTitle">Title</h2>
+            <span id="detailType">Type</span>
+        </div>
+        <div class="detail-content" id="detailContent">
+            <!-- Dynamic content -->
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let currentFilter = '';
+        let currentResults = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            setupFilters();
+            
+            // Enter key to search
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') search();
+            });
+        });
+
+        function setupFilters() {
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    currentFilter = chip.dataset.type;
+                    const query = document.getElementById('searchInput').value.trim();
+                    if (query) search();
+                });
+            });
+        }
+
+        function setQuery(query) {
+            document.getElementById('searchInput').value = query;
+            search();
+        }
+
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_BASE}/stats`);
+                const data = await res.json();
+                document.getElementById('stats').textContent = 
+                    `共 ${data.total_items} 个知识条目 · ${Object.keys(data.entity_types).length} 种类型`;
+            } catch (err) {
+                document.getElementById('stats').textContent = 
+                    '⚠️ 无法连接到记忆库服务，请运行: pixi run serve-memory';
+            }
+        }
+
+        async function search() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            const btn = document.getElementById('searchBtn');
+            btn.disabled = true;
+            btn.textContent = '搜索中...';
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading">正在语义检索</div>';
+
+            try {
+                const url = new URL(`${API_BASE}/search`);
+                url.searchParams.append('q', query);
+                url.searchParams.append('k', '10');
+                if (currentFilter) url.searchParams.append('type', currentFilter);
+
+                const res = await fetch(url);
+                const data = await res.json();
+                currentResults = data.results;
+                renderResults(data.results, query);
+            } catch (err) {
+                resultsDiv.innerHTML = `
+                    <div class="empty-state">
+                        <h3>❌ 连接失败</h3>
+                        <p>请确保记忆库服务已启动: pixi run serve-memory</p>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '搜索';
+            }
+        }
+
+        function renderResults(results, query) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="empty-state">
+                        <h3>😕 未找到相关结果</h3>
+                        <p>尝试使用不同的关键词或移除筛选条件</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            results.forEach((r, i) => {
+                const tags = r.tags ? r.tags.map(t => `<span class="result-tag">${t}</span>`).join('') : '';
+                html += `
+                    <div class="result-card" onclick="showDetail('${r.id}')" style="animation: fadeIn 0.3s ease ${i * 0.05}s both;">
+                        <div class="result-header">
+                            <div class="result-title">${r.name}</div>
+                            <div class="result-score">${(r.score * 100).toFixed(1)}%</div>
+                        </div>
+                        <div class="result-meta">
+                            <span class="result-type">${r.entity_type}</span>
+                            ${tags}
+                        </div>
+                        <div class="result-text">${r.text}</div>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        async function showDetail(id) {
+            try {
+                const [entityRes, relatedRes] = await Promise.all([
+                    fetch(`${API_BASE}/entity?id=${id}`),
+                    fetch(`${API_BASE}/related?id=${id}&k=5`)
+                ]);
+                
+                const entity = await entityRes.json();
+                const related = await relatedRes.json();
+                
+                document.getElementById('detailTitle').textContent = entity.name;
+                document.getElementById('detailType').textContent = entity.entity_type;
+                
+                let content = `
+                    <div class="detail-section">
+                        <h3>描述</h3>
+                        <p>${entity.text.replace(/\n/g, '<br>')}</p>
+                    </div>
+                `;
+                
+                if (entity.tags && entity.tags.length > 0) {
+                    content += `
+                        <div class="detail-section">
+                            <h3>标签</h3>
+                            <p>${entity.tags.map(t => `<span class="result-tag">${t}</span>`).join(' ')}</p>
+                        </div>
+                    `;
+                }
+                
+                if (entity.difficulty) {
+                    content += `
+                        <div class="detail-section">
+                            <h3>难度</h3>
+                            <p>${entity.difficulty}</p>
+                        </div>
+                    `;
+                }
+                
+                if (related.related && related.related.length > 0) {
+                    content += `
+                        <div class="detail-section">
+                            <h3>相关内容</h3>
+                            <div class="related-list">
+                                ${related.related.map(r => `
+                                    <div class="related-item" onclick="showDetail('${r.id}')">
+                                        ${r.name}
+                                        <span class="related-score">${(r.score * 100).toFixed(0)}%</span>
+                                        <div style="font-size: 12px; color: #666; margin-top: 4px;">${r.entity_type}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('detailContent').innerHTML = content;
+                document.getElementById('detailPanel').classList.add('open');
+            } catch (err) {
+                console.error('Failed to load detail:', err);
+            }
+        }
+
+        function closeDetail() {
+            document.getElementById('detailPanel').classList.remove('open');
+        }
+
+        // Close detail on outside click
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('detailPanel');
+            if (panel.classList.contains('open') && !panel.contains(e.target) && !e.target.closest('.result-card')) {
+                closeDetail();
+            }
+        });
+    </script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</body>
+</html>

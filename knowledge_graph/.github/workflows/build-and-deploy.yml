@@ -1,0 +1,220 @@
+name: Build and Deploy Knowledge Graph
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - 'content/**'
+      - 'edges/**'
+      - 'schema/**'
+      - 'scripts/**'
+      - 'memory_core/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'content/**'
+      - 'edges/**'
+      - 'schema/**'
+
+jobs:
+  validate:
+    name: Validate Content
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
+      with:
+        pixi-version: v0.39.0
+        cache: true
+    
+    - name: Install dependencies
+      run: pixi install
+    
+    - name: Validate YAML content
+      run: pixi run validate
+    
+    - name: Run tests
+      run: pixi run test
+
+  build:
+    name: Build Artifacts
+    needs: validate
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Pixi
+      uses: prefix-dev/setup-pixi@v0.8.1
+      with:
+        pixi-version: v0.39.0
+        cache: true
+    
+    - name: Install dependencies
+      run: pixi install
+    
+    - name: Build graph JSON
+      run: pixi run build
+    
+    - name: Build memory store
+      run: pixi run build-memory
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: knowledge-graph-artifacts
+        path: |
+          web/data/graph.json
+          memory_store/
+        retention-days: 30
+    
+    - name: Create release archive
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      run: |
+        mkdir -p dist
+        tar -czf dist/knowledge-graph-${GITHUB_SHA::7}.tar.gz \
+          web/data/graph.json \
+          memory_store/ \
+          content/ \
+          edges/ \
+          schema/ \
+          README.md
+    
+    - name: Upload release archive
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-archive
+        path: dist/
+        retention-days: 90
+
+  deploy-api:
+    name: Deploy API (Staging)
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: knowledge-graph-artifacts
+    
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        # 这里可以添加实际的部署命令
+        # 例如：rsync, scp, 或调用云服务 API
+        echo "Staging deployment complete"
+    
+    - name: Health check
+      run: |
+        # 等待服务启动
+        sleep 5
+        # 健康检查
+        curl -f http://staging-api.example.com/health || exit 1
+
+  deploy-production:
+    name: Deploy API (Production)
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    environment: production
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: knowledge-graph-artifacts
+    
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production environment..."
+        # 这里可以添加实际的部署命令
+        echo "Production deployment complete"
+    
+    - name: Health check
+      run: |
+        sleep 5
+        curl -f http://api.example.com/health || exit 1
+    
+    - name: Notify success
+      if: success()
+      run: |
+        echo "✅ Knowledge graph deployed successfully!"
+        echo "Commit: ${{ github.sha }}"
+        echo "Author: ${{ github.actor }}"
+
+  sync-openwebui:
+    name: Sync to Open WebUI
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: knowledge-graph-artifacts
+    
+    - name: Export to Open WebUI format
+      run: |
+        # 创建 Open WebUI 知识库导入格式
+        mkdir -p openwebui_export
+        
+        # 将 YAML 转换为 Markdown 文件
+        for file in content/**/*.yaml; do
+          if [ -f "$file" ]; then
+            python scripts/yaml_to_markdown.py "$file" "openwebui_export/"
+          fi
+        done
+        
+        # 打包
+        tar -czf openwebui_knowledge_base.tar.gz openwebui_export/
+    
+    - name: Upload Open WebUI export
+      uses: actions/upload-artifact@v4
+      with:
+        name: openwebui-knowledge-base
+        path: openwebui_knowledge_base.tar.gz
+        retention-days: 30
+
+  changelog:
+    name: Update Changelog
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Generate changelog
+      run: |
+        echo "## Changes since last release" > CHANGELOG_LATEST.md
+        echo "" >> CHANGELOG_LATEST.md
+        git log --pretty=format:"- %s (%h)" $(git describe --tags --abbrev=0 2>/dev/null || echo HEAD~10)..HEAD >> CHANGELOG_LATEST.md
+        
+        # 统计变更
+        echo "" >> CHANGELOG_LATEST.md
+        echo "### Statistics" >> CHANGELOG_LATEST.md
+        echo "- Modified files: $(git diff-tree --no-commit-id --name-only -r HEAD | wc -l)" >> CHANGELOG_LATEST.md
+        echo "- Content files: $(find content -name '*.yaml' | wc -l)" >> CHANGELOG_LATEST.md
+    
+    - name: Upload changelog
+      uses: actions/upload-artifact@v4
+      with:
+        name: changelog
+        path: CHANGELOG_LATEST.md

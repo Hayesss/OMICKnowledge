@@ -1,0 +1,48 @@
+#!/bin/bash
+# Post-commit hook: 提交后自动构建记忆库
+
+echo "🔄 Running post-commit build..."
+
+# 获取项目根目录
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_ROOT"
+
+# 检查是否有内容相关变更
+if ! git diff-tree --no-commit-id --name-only -r HEAD | grep -qE '^content/|^edges/|^schema/'; then
+    echo "📭 No content changes, skipping build"
+    exit 0
+fi
+
+echo "📄 Content changes detected, rebuilding..."
+
+# 检查 pixi 是否可用
+if ! command -v pixi &> /dev/null; then
+    echo "⚠️  pixi not found, cannot auto-build"
+    exit 0
+fi
+
+# 检查是否在 CI 环境中（避免循环触发）
+if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ]; then
+    echo "🤖 Running in CI, skipping local build"
+    exit 0
+fi
+
+# 后台构建
+(
+    # 等待几秒确保提交完成
+    sleep 2
+    
+    echo "🔨 Building memory store..."
+    if pixi run build-memory > /tmp/kg_build.log 2>&1; then
+        echo "✅ Memory store built successfully"
+        
+        # 可选：自动提交构建产物
+        # git add memory_store/
+        # git commit -m "chore: auto-build memory store [skip ci]" || true
+    else
+        echo "❌ Build failed, check /tmp/kg_build.log"
+    fi
+) &
+
+echo "⏳ Build started in background (check /tmp/kg_build.log)"
+exit 0

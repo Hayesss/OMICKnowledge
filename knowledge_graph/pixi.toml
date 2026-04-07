@@ -1,0 +1,55 @@
+[workspace]
+name = "knowledge_graph"
+version = "0.1.0"
+description = "多组学分析知识图谱 - 基于 YAML 内容 + Python 构建脚本 + D3.js 可视化的轻量级知识图谱系统"
+authors = [""]
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
+
+[dependencies]
+python = ">=3.9"
+pyyaml = ">=6.0"
+pytest = ">=7.0"
+numpy = ">=1.20"
+sentence-transformers = ">=2.0"
+tqdm = ">=4.60"
+
+[tasks]
+# 校验内容 - 验证实体和边的有效性
+validate = { cmd = "python scripts/validate.py" }
+
+# 构建图谱 - 生成 web/data/graph.json
+build = { cmd = "python scripts/build_graph.py" }
+
+# 构建记忆库 - 将 YAML 内容转换为向量存储
+build-memory = { cmd = "python -m memory_core.memory_builder" }
+
+# 查询记忆库（交互模式）
+query-memory = { cmd = "python -m memory_core.query" }
+
+# 启动记忆库 API 服务器
+serve-memory = { cmd = "python -m memory_core.server" }
+
+# 运行测试
+test = { cmd = "pytest tests/ -v" }
+
+# 启动传统图谱服务器（前台运行，可通过 Ctrl+C 停止）
+serve = { cmd = "python -m http.server 8080", cwd = "web" }
+
+# 启动语义搜索界面
+serve-memory-web = { cmd = "python -m http.server 8081", cwd = "web_memory" }
+
+# 启动 Open WebUI（Docker）
+serve-openwebui = { cmd = "echo '请查看 OPEN_WEBUI_GUIDE.md 启动 Docker' && docker run -d -p 3000:8080 --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:main || echo '容器可能已存在，访问 http://localhost:3000'" }
+
+# 启动完整栈（API + Open WebUI）
+start-all = { cmd = "echo '请分别运行: pixi run serve-memory 和 pixi run serve-openwebui'" }
+
+# 完整启动流程（传统图谱）：校验 → 构建 → 测试 → 启动服务器
+start = { depends-on = ["validate", "build", "test", "serve"] }
+
+# 完整启动流程（记忆库）：构建记忆库 → 启动 API
+start-memory = { depends-on = ["build-memory", "serve-memory"] }
+
+# 仅构建和验证（不启动服务器）
+prep = { depends-on = ["validate", "build", "test"] }

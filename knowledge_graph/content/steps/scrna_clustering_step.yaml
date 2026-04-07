@@ -1,0 +1,21 @@
+id: scrna-clustering-step
+name: 非线性降维与聚类
+type: step
+description: 基于共享最近邻图进行细胞聚类，并使用 UMAP 可视化高维单细胞数据。
+difficulty: advanced
+tags: ["scRNA-seq", "clustering", "umap", "visualization"]
+source: manual
+last_updated: "2026-04-02"
+input: "主成分坐标（PC scores）"
+output: "细胞聚类标签和 UMAP 坐标"
+key_params:
+  - name: resolution
+    description: 聚类分辨率，越高则簇越细
+    default: "0.8"
+  - name: n_neighbors
+    description: UMAP 的最近邻数量
+    default: "30"
+detailed_explanation: |
+  在 PCA 降维后，scRNA-seq 聚类通常采用图-based 方法：首先基于欧氏距离或关联距离构建细胞的 k-NN 图，然后转换为共享最近邻（SNN）图，最后使用 Louvain 或 Leiden 算法识别社区结构（即细胞簇）。
+  resolution 参数直接控制簇的粒度：低分辨率（0.4-0.8）得到大类（如 T/B cell），高分辨率（1.2-2.0）得到更细的亚型（如 CD4+ Treg vs Th17）。
+  UMAP（Uniform Manifold Approximation and Projection）是目前最流行的单细胞可视化方法，它能在保留局部细胞邻域关系的同时，将不同群体在二维空间中拉开距离。但需要注意，UMAP 距离不反映真实的转录组距离，不能用于定量比较。

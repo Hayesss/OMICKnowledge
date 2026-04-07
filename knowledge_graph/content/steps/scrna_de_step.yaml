@@ -1,0 +1,21 @@
+id: scrna-de-step
+name: 差异基因分析
+type: step
+description: 比较不同细胞簇间的基因表达差异，识别细胞类型特异性标记基因。
+difficulty: advanced
+tags: ["scRNA-seq", "differential-expression", "markers"]
+source: manual
+last_updated: "2026-04-02"
+input: "聚类标签和表达矩阵"
+output: "差异基因列表（logFC, p-value, adjusted p-value）"
+key_params:
+  - name: logfc_threshold
+    description: 最小 log2  fold change 阈值
+    default: "0.25"
+  - name: min_pct
+    description: 基因在群体中表达的最小细胞比例
+    default: "0.1"
+detailed_explanation: |
+  差异基因分析（FindAllMarkers / FindMarkers）旨在识别在特定细胞簇中高表达而在其他簇中低表达的基因，这些基因通常可作为细胞类型的标记基因（marker genes）。
+  Seurat 默认使用 Wilcoxon rank-sum test，但也支持 MAST、DESeq2 等多种方法。常用过滤标准包括：平均 log2 fold change > 0.25；在目标群体中表达的细胞比例 > 10%；校正后 p-value < 0.05。
+  除了单细胞水平的差异分析，pseudobulk 方法（将同一群体的细胞 UMI 加总后使用 DESeq2/EdgeR）近年来被认为在控制假阳性方面表现更优，尤其适用于存在强批次效应的数据集。

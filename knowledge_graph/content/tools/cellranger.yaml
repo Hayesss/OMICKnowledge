@@ -1,0 +1,29 @@
+id: cellranger
+name: Cell Ranger
+type: tool
+description: 10x Genomics 官方提供的 scRNA-seq 数据处理流程，用于从原始测序数据生成基因表达矩阵。
+difficulty: beginner
+tags: ["scRNA-seq", "10x-genomics", "preprocessing"]
+source: manual
+last_updated: "2026-04-02"
+version: "7.1.0"
+install_cmd: "下载 10x Genomics 官方预编译二进制文件"
+doc_url: "https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger"
+pros:
+  - 与 10x 平台完美兼容，输出格式标准化
+  - 包含比对、定量、聚类和差异分析的一站式流程
+  - 支持多组学数据（如 Cell Ranger ARC）
+cons:
+  - 仅支持 10x Genomics 数据
+  - 计算资源需求较高
+key_params:
+  - name: --transcriptome
+    description: 参考转录组索引路径
+    default: "required"
+  - name: --fastqs
+    description: 原始 FASTQ 文件目录
+    default: "required"
+detailed_explanation: |
+  Cell Ranger 是 10x Genomics 官方推出的单细胞数据分析软件套件，核心模块包括：cellranger mkfastq（将 BCL 文件转换为 FASTQ）、cellranger count（比对、定量和生成 feature-barcode 矩阵）和 cellranger aggr（合并多个样本的计数结果）。
+  其比对步骤基于 STAR 算法，定量基于 GTF 注释文件。输出结果包括过滤后的表达矩阵（filtered_feature_bc_matrix）、质控报告（web_summary.html）和细胞聚类预览（基于 Louvain 聚类的 t-SNE 图）。
+  对于非 10x 平台的数据（如 Smart-seq2、Drop-seq），需要使用其他工具如 STARsolo、alevin 或 zUMIs。

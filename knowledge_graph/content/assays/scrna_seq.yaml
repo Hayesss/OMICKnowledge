@@ -1,0 +1,12 @@
+id: scRNA-seq
+name: scRNA-seq
+type: assay
+description: 单细胞转录组测序技术，用于在单个细胞分辨率下解析基因表达谱，揭示细胞异质性、发育轨迹和疾病机制。
+difficulty: advanced
+tags: ["scRNA-seq", "transcriptomics", "single-cell"]
+source: manual
+last_updated: "2026-04-02"
+detailed_explanation: |
+  单细胞 RNA 测序（single-cell RNA-seq, scRNA-seq）是一类能够在单个细胞水平定量检测转录本表达的高通量技术。与传统 bulk RNA-seq 相比，scRNA-seq 可以揭示组织内不同细胞类型的异质性、识别稀有细胞亚群、重建发育分化轨迹以及解析疾病状态下细胞类型特异性的基因调控变化。
+  主流技术平台包括基于微流控的 10x Genomics Chromium（通量高、成本低）、基于微孔板的 Smart-seq2（全长覆盖、适合低丰度转录本）、以及基于组合索引的 Split-seq 和 sci-RNA-seq（超高通量）。
+  scRNA-seq 的核心分析流程包括：数据预处理（比对、定量、质控）、归一化与降维（PCA、UMAP/t-SNE）、细胞聚类与注释、差异表达分析、拟时序分析（pseudotime）、细胞通讯分析和转录因子活性推断。由于其高维度、高噪音和高缺失率（dropout）的特点，scRNA-seq 分析对计算资源和统计方法提出了较高要求。
