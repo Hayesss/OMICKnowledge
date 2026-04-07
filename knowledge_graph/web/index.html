@@ -780,8 +780,16 @@
     // KB Selector functions
     async function loadKbSelector() {
       try {
-        const response = await fetch('/api/kb/list');
+        console.log('Loading KB list...');
+        const response = await fetch('http://localhost:8000/api/kb/list');
+        console.log('Response:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
         const data = await response.json();
+        console.log('Data:', data);
         
         if (data.success) {
           const current = data.current;
@@ -789,18 +797,32 @@
           
           // Render dropdown
           const list = document.getElementById('kbDropdownList');
-          list.innerHTML = data.knowledge_bases.map(kb => `
-            <div class="kb-dropdown-item ${kb.id === current?.id ? 'active' : ''}" onclick="switchKb('${kb.id}')">
-              <div class="kb-icon" style="background: ${kb.color}20; color: ${kb.color}">${kb.icon}</div>
-              <div class="kb-info">
-                <div class="kb-name">${kb.name}</div>
-                <div class="kb-count">${kb.entity_count} 个实体</div>
+          if (data.knowledge_bases.length === 0) {
+            list.innerHTML = '<div style="padding: 16px; color: var(--text-muted);">暂无知识库</div>';
+          } else {
+            list.innerHTML = data.knowledge_bases.map(kb => `
+              <div class="kb-dropdown-item ${kb.id === current?.id ? 'active' : ''}" onclick="switchKb('${kb.id}')">
+                <div class="kb-icon" style="background: ${kb.color}20; color: ${kb.color}">${kb.icon || '📚'}</div>
+                <div class="kb-info">
+                  <div class="kb-name">${kb.name}</div>
+                  <div class="kb-count">${kb.entity_count || 0} 个实体</div>
+                </div>
               </div>
-            </div>
-          `).join('');
+            `).join('');
+          }
+        } else {
+          console.error('API error:', data.error);
+          document.getElementById('currentKbName').textContent = '加载失败';
         }
       } catch (e) {
         console.error('Failed to load KB list:', e);
+        document.getElementById('currentKbName').textContent = 'API 未连接';
+        document.getElementById('kbDropdownList').innerHTML = `
+          <div style="padding: 16px; color: var(--error);">
+            无法连接到 API 服务<br>
+            <small style="color: var(--text-muted)">请确保服务已启动: pixi run serve-memory</small>
+          </div>
+        `;
       }
     }
 
@@ -810,7 +832,7 @@
 
     async function switchKb(id) {
       try {
-        const response = await fetch('/api/kb/switch', {
+        const response = await fetch('http://localhost:8000/api/kb/switch', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({id})

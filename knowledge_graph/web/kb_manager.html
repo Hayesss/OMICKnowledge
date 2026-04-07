@@ -763,7 +763,10 @@
 
     async function loadKnowledgeBases() {
       try {
-        const response = await fetch('/api/kb/list');
+        const response = await fetch('http://localhost:8000/api/kb/list');
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
         const data = await response.json();
         
         if (data.success) {
@@ -881,7 +884,7 @@
 
     async function switchKb(id) {
       try {
-        const response = await fetch('/api/kb/switch', {
+        const response = await fetch('http://localhost:8000/api/kb/switch', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({id})
@@ -941,7 +944,7 @@
       }
 
       try {
-        const response = await fetch('/api/kb/create', {
+        const response = await fetch('http://localhost:8000/api/kb/create', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -972,7 +975,7 @@
       }
 
       try {
-        const response = await fetch(`/api/kb/delete?id=${id}`, {
+        const response = await fetch(`http://localhost:8000/api/kb/delete?id=${id}`, {
           method: 'DELETE'
         });
 
