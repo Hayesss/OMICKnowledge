@@ -376,8 +376,15 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
                     
                     result = processor.process_pdf(tmp_path, extract_figures=False)
                     
-                    # Save entities to content directory
-                    processor.save_entities_to_yaml(result)
+                    # Save entities to current KB's content directory
+                    kb_manager = self._get_kb_manager()
+                    current_kb = kb_manager.get_current_kb()
+                    if current_kb:
+                        output_dir = kb_manager.get_kb_content_dir(current_kb.id)
+                    else:
+                        output_dir = Path('content')
+                    
+                    processor.save_entities_to_yaml(result, str(output_dir))
                     
                     self._send_json({
                         'success': True,
