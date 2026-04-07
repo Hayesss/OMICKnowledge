@@ -3,12 +3,19 @@ name: Peak 注释
 type: step
 description: 将 peaks 注释到最近的基因和调控元件，分析其功能富集。
 difficulty: intermediate
-tags: ["atac-seq", "annotation"]
+tags:
+- atac-seq
+- annotation
 source: manual
-last_updated: "2026-04-01"
-input: "Peak 文件（BED）"
-output: "注释结果表"
+last_updated: '2026-04-01'
+input: Peak 文件（BED）
+output: 注释结果表
 key_params:
-  - name: tss_distance
-    description: 距离 TSS 的最大范围
-    default: "3000"
+- name: tss_distance
+  description: 距离 TSS 的最大范围
+  default: '3000'
+detailed_explanation: Peak 注释步骤将 peak calling 得到的基因组坐标转化为可理解的生物学功能和调控关联。首先，使用注释工具（如
+  ChIPseeker、HOMER annotatePeaks、GREAT）将每个 peak 分配到最近的基因（通常按 TSS 距离排序）和基因组功能区（启动子、5'UTR、外显子、内含子、基因间区）。启动子区（通常定义为
+  TSS ± 3 kb）的 peaks 通常与基因转录激活直接相关；基因间区的 peaks 则可能是远程增强子或沉默子。其次，进行 motif 富集分析（HOMER、MEME-ChIP），识别在这些开放区域中富集的转录因子结合
+  motif，从而推断调控网络。最后，对 peak 关联基因进行功能富集分析（clusterProfiler、DAVID、Enrichr），揭示这些基因参与的 GO
+  生物学过程、KEGG 代谢通路和疾病关联。注释结果通常以表格和可视化图（如 peak 分布饼图、TSS 热图、通路气泡图）的形式呈现。

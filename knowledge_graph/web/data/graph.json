@@ -12,7 +12,8 @@
         "functional-analysis"
       ],
       "source": "manual",
-      "last_updated": "2026-04-01"
+      "last_updated": "2026-04-01",
+      "detailed_explanation": "注释与解读阶段将抽象的基因组坐标（peaks）转化为具体的生物学功能和调控机制。该阶段通常包括三个层次的分析：1) 基因组位置注释，利用 ChIPseeker、HOMER 或 GREAT 等工具，将 peaks 映射到最近的基因（通常以转录起始位点 TSS 为中心），并分类到启动子、5'UTR、外显子、内含子、基因间区等基因组特征；2) 调控元件注释，通过与已知的增强子、沉默子、绝缘子数据库（如 VISTA Enhancer Browser、FANTOM5、ENCODE cCRE）比对，识别潜在的功能性调控序列；3) 功能富集分析，对 peak 关联基因进行 GO（Gene Ontology）、KEGG 通路、GSEA 和 motif 富集分析（如使用 HOMER、MEME-ChIP），揭示转录因子结合模式、信号通路激活状态和疾病关联。高质量的注释结果可以帮助研究者从海量的表观基因组数据中提炼出有意义的生物学假设。"
     },
     {
       "id": "peak-calling",
@@ -26,7 +27,8 @@
         "regulatory-elements"
       ],
       "source": "manual",
-      "last_updated": "2026-04-01"
+      "last_updated": "2026-04-01",
+      "detailed_explanation": "Peak calling 是 ATAC-seq 分析的核心环节，旨在从预处理后的 BAM 文件中识别统计显著的染色质开放区域（peaks）。ATAC-seq 利用 Tn5 转座酶优先切割核小体缺失区域（Nucleosome-Free Regions, NFR），这些区域会富集大量测序 reads，在基因组上形成信号峰。Peak caller（如 MACS2、HOMER、Genrich）通过建立局部背景模型（通常是泊松分布或负二项分布），比较每个基因组窗口内的 reads 密度与周围背景及对照样本的差异，从而确定显著开放的区域。针对 ATAC-seq 数据，需要特别注意参数调整：由于 Tn5 在 DNA 双链上切割后会产生 9 bp 的粘性末端，实际的开放中心位于 reads 起始位置的 +4.5 bp 处，因此通常设置 --shift -75 和 --extsize 150 来准确模拟片段中心。输出结果包括 peak 坐标（BED/NarrowPeak）、信号强度文件（bedGraph/bigWig）和质量评估指标（如 FRiP score：reads in peaks 比例）。"
     },
     {
       "id": "preprocessing",
@@ -40,7 +42,53 @@
         "qc"
       ],
       "source": "manual",
-      "last_updated": "2026-04-01"
+      "last_updated": "2026-04-01",
+      "detailed_explanation": "数据预处理是 ATAC-seq 分析流程的基石，直接决定后续 peak calling 和差异分析的可靠性。该阶段的核心任务包括：1) 原始数据质量评估（FastQC/MultiQC），检查碱基质量、GC 偏倚、接头污染和序列重复水平；2) 接头去除和低质量碱基修剪（cutadapt/Trimmomatic），确保输入比对的 reads 质量；3) 序列比对到参考基因组（Bowtie2/BWA-MEM），考虑 ATAC-seq 片段的短插入特性；4) 比对后过滤，包括去除 PCR 重复（Picard/sambamba）、过滤低质量比对（MAPQ < 30）、去除线粒体 DNA（chrM，通常占 ATAC-seq reads 的 10-50%）以及去除多比对 reads。严格的预处理能显著降低技术噪音，提高开放区域检测的灵敏度和特异性。"
+    },
+    {
+      "id": "scrna-preprocessing",
+      "name": "数据预处理",
+      "type": "stage",
+      "description": "对 scRNA-seq 原始数据进行比对、定量、质控和过滤，获得高质量表达矩阵。",
+      "difficulty": "intermediate",
+      "tags": [
+        "scRNA-seq",
+        "preprocessing",
+        "qc"
+      ],
+      "source": "manual",
+      "last_updated": "2026-04-02",
+      "detailed_explanation": "scRNA-seq 数据预处理是决定下游分析可靠性的关键步骤。对于 10x Genomics 数据，通常使用 Cell Ranger 进行 demultiplexing、基因组比对（基于 STAR）、基因定量并生成基因-条形码表达矩阵（feature-barcode matrix）。\n质控环节需要过滤低质量细胞：1) 检测到的基因数（nFeature）过少（可能为空液滴/死细胞）或过多（可能是双细胞）；2) 线粒体基因比例过高（通常 >5-10% 提示细胞膜破裂、细胞质 RNA 流失）；3) 总 UMI 数（nCount）异常。常用阈值因组织类型和实验平台而异。\n此外，需要根据空液滴和双细胞检测算法（如 EmptyDrops、DoubletFinder/Scrublet）进一步过滤。最终获得一个相对干净的高维稀疏表达矩阵，供下游归一化和聚类分析使用。\n"
+    },
+    {
+      "id": "scrna-clustering",
+      "name": "聚类与注释",
+      "type": "stage",
+      "description": "对 scRNA-seq 表达矩阵进行降维、聚类和细胞类型注释，揭示细胞异质性。",
+      "difficulty": "advanced",
+      "tags": [
+        "scRNA-seq",
+        "clustering",
+        "visualization"
+      ],
+      "source": "manual",
+      "last_updated": "2026-04-02",
+      "detailed_explanation": "聚类与注释是 scRNA-seq 分析的核心环节，旨在将大量单细胞按转录组相似性分组，并赋予生物学身份（细胞类型或状态）。标准流程包括：\n1) 高变基因选择：筛选在不同细胞间表达差异最大的基因，减少噪音干扰；\n2) 线性降维（PCA）：将高维表达矩阵投影到低维空间，保留主要变异；\n3) 非线性降维（UMAP/t-SNE）：将细胞在二维/三维空间中可视化，保持局部邻域结构的同时拉开不同群体的距离；\n4) 图-based 聚类（如 Louvain/Leiden 算法）：基于细胞间的共享最近邻（SNN）图结构识别细胞亚群；\n5) 细胞类型注释：通过已知标记基因（marker genes）的表达模式，将聚类结果映射到经典细胞类型（如 T cell, B cell, macrophage）。自动注释工具（如 SingleR、CellTypist）可以辅助这一过程，但手工校验仍不可或缺。\n"
+    },
+    {
+      "id": "scrna-de",
+      "name": "差异表达分析",
+      "type": "stage",
+      "description": "比较不同细胞群体间的基因表达差异，识别细胞类型特异性标记和差异调控基因。",
+      "difficulty": "advanced",
+      "tags": [
+        "scRNA-seq",
+        "differential-expression",
+        "statistics"
+      ],
+      "source": "manual",
+      "last_updated": "2026-04-02",
+      "detailed_explanation": "单细胞差异表达分析（DE）是连接细胞异质性与功能调控的桥梁。与 bulk RNA-seq 不同，scRNA-seq 数据具有高稀疏性（dropout）、高噪音和非正态分布的特点，因此需要使用专门的统计方法。\n常用的差异分析方法包括：Wilcoxon rank-sum test（非参数，Seurat 默认）、MAST（考虑 dropout 的混合模型）、DESeq2（基于负二项分布，适合 pseudobulk 聚合分析）和 EdgeR。\n为了避免批次效应和技术噪音导致的假阳性，差异分析通常需要在数据整合和批次校正之后进行。分析结果需要多重检验校正（如 Bonferroni 或 FDR/Benjamini-Hochberg），并以火山图、热图和点图形式可视化。\n差异基因可进一步用于功能富集分析（GO/KEGG）、转录因子活性推断（SCENIC）和细胞通讯分析（CellPhoneDB/Nichenet），从而揭示不同细胞群体在疾病或发育过程中的功能差异。\n"
     },
     {
       "id": "alignment",
@@ -63,7 +111,149 @@
           "description": "最大插入片段大小",
           "default": "1000"
         }
-      ]
+      ],
+      "detailed_explanation": "序列比对是将经过质控的 clean reads 精确映射到参考基因组坐标的过程，是连接原始测序数据与生物学解释的桥梁。ATAC-seq 数据通常长度较短（<100 bp）且插入片段大小不一，因此需要选择支持局部比对（local alignment）和 gapped alignment 的工具。Bowtie2 是 ATAC-seq 最常用的比对器，其 --very-sensitive 参数可以在灵敏度、速度和准确性之间取得良好平衡。由于 ATAC-seq 的 Tn5 片段可能跨越核小体边界或含有 INDEL，-X 参数（最大插入片段大小，通常设为 1000-2000 bp）能帮助捕获较长的单核小体/双核小体片段。比对后需要进行严格过滤：去除未比对（unmapped）、多比对（multimapping, MAPQ < 30）和 PCR 重复 reads（duplicates），以保证进入 peak calling 的 reads 具有唯一的基因组来源和高置信度。最终输出为排序后的 BAM 文件及其索引（BAI）。"
+    },
+    {
+      "id": "scrna-clustering-step",
+      "name": "非线性降维与聚类",
+      "type": "step",
+      "description": "基于共享最近邻图进行细胞聚类，并使用 UMAP 可视化高维单细胞数据。",
+      "difficulty": "advanced",
+      "tags": [
+        "scRNA-seq",
+        "clustering",
+        "umap",
+        "visualization"
+      ],
+      "source": "manual",
+      "last_updated": "2026-04-02",
+      "input": "主成分坐标（PC scores）",
+      "output": "细胞聚类标签和 UMAP 坐标",
+      "key_params": [
+        {
+          "name": "resolution",
+          "description": "聚类分辨率，越高则簇越细",
+          "default": "0.8"
+        },
+        {
+          "name": "n_neighbors",
+          "description": "UMAP 的最近邻数量",
+          "default": "30"
+        }
+      ],
+      "detailed_explanation": "在 PCA 降维后，scRNA-seq 聚类通常采用图-based 方法：首先基于欧氏距离或关联距离构建细胞的 k-NN 图，然后转换为共享最近邻（SNN）图，最后使用 Louvain 或 Leiden 算法识别社区结构（即细胞簇）。\nresolution 参数直接控制簇的粒度：低分辨率（0.4-0.8）得到大类（如 T/B cell），高分辨率（1.2-2.0）得到更细的亚型（如 CD4+ Treg vs Th17）。\nUMAP（Uniform Manifold Approximation and Projection）是目前最流行的单细胞可视化方法，它能在保留局部细胞邻域关系的同时，将不同群体在二维空间中拉开距离。但需要注意，UMAP 距离不反映真实的转录组距离，不能用于定量比较。\n"
+    },
+    {
+      "id": "scrna-qc",
+      "name": "质控与过滤",
+      "type": "step",
+      "description": "基于基因数、UMI 数和线粒体比例过滤低质量细胞和双细胞。",
+      "difficulty": "beginner",
+      "tags": [
+        "scRNA-seq",
+        "qc",
+        "preprocessing"
+      ],
+      "source": "manual",
+      "last_updated": "2026-04-02",
+      "input": "原始表达矩阵（h5 / mtx）",
+      "output": "过滤后的表达矩阵",
+      "key_params": [
+        {
+          "name": "min_genes",
+          "description": "每个细胞检测到的最小基因数",
+          "default": "200"
+        },
+        {
+          "name": "max_mt_percent",
+          "description": "线粒体基因最大百分比",
+          "default": "5"
+        }
+      ],
+      "detailed_explanation": "质控是 scRNA-seq 预处理的首要步骤。由于实验过程中会产生空液滴、死细胞和双细胞，这些低质量数据会严重干扰下游聚类和差异分析。\n常用过滤标准包括：nFeature_RNA（每个细胞检测到的基因数）在 200-5000 之间；nCount_RNA（总 UMI 数）不过高；percent.mt（线粒体基因比例）< 5-10%。\n对于双细胞（doublets），需要使用 Scrublet、DoubletFinder 或 Solo 等算法进行检测和去除。高质量质控能显著提高细胞聚类的清晰度和生物学可解释性。\n"
+    },
+    {
+      "id": "scrna-normalization",
+      "name": "归一化与特征选择",
+      "type": "step",
+      "description": "消除测序深度差异，选择高变基因，为降维和聚类做准备。",
+      "difficulty": "intermediate",
+      "tags": [
+        "scRNA-seq",
+        "normalization",
+        "feature-selection"
+      ],
+      "source": "manual",
+      "last_updated": "2026-04-02",
+      "input": "过滤后的表达矩阵",
+      "output": "归一化后的高变基因矩阵",
+      "key_params": [
+        {
+          "name": "n_features",
+          "description": "选择的高变基因数量",
+          "default": "2000"
+        },
+        {
+          "name": "normalization_method",
+          "description": "归一化方法",
+          "default": "LogNormalize"
+        }
+      ],
+      "detailed_explanation": "由于不同细胞的测序深度和捕获效率存在差异，原始 UMI 计数不能直接比较。归一化的目标是消除这些技术性差异，同时保留生物学变异。\n常用方法包括：1) 文库大小归一化（CPM、 scran pool-based normalization）；2) Log 变换（log1p）；3) 高变基因选择（vst、mean.var.plot），通常选取 2000 个高变基因用于下游 PCA 和聚类。\n近年来，基于深度学习的归一化方法（如 scVI、DCA）也逐渐流行，它们能同时处理批次效应、dropout 和过离散问题。\n"
+    },
+    {
+      "id": "scrna-de-step",
+      "name": "差异基因分析",
+      "type": "step",
+      "description": "比较不同细胞簇间的基因表达差异，识别细胞类型特异性标记基因。",
+      "difficulty": "advanced",
+      "tags": [
+        "scRNA-seq",
+        "differential-expression",
+        "markers"
+      ],
+      "source": "manual",
+      "last_updated": "2026-04-02",
+      "input": "聚类标签和表达矩阵",
+      "output": "差异基因列表（logFC, p-value, adjusted p-value）",
+      "key_params": [
+        {
+          "name": "logfc_threshold",
+          "description": "最小 log2  fold change 阈值",
+          "default": "0.25"
+        },
+        {
+          "name": "min_pct",
+          "description": "基因在群体中表达的最小细胞比例",
+          "default": "0.1"
+        }
+      ],
+      "detailed_explanation": "差异基因分析（FindAllMarkers / FindMarkers）旨在识别在特定细胞簇中高表达而在其他簇中低表达的基因，这些基因通常可作为细胞类型的标记基因（marker genes）。\nSeurat 默认使用 Wilcoxon rank-sum test，但也支持 MAST、DESeq2 等多种方法。常用过滤标准包括：平均 log2 fold change > 0.25；在目标群体中表达的细胞比例 > 10%；校正后 p-value < 0.05。\n除了单细胞水平的差异分析，pseudobulk 方法（将同一群体的细胞 UMI 加总后使用 DESeq2/EdgeR）近年来被认为在控制假阳性方面表现更优，尤其适用于存在强批次效应的数据集。\n"
+    },
+    {
+      "id": "scrna-pca",
+      "name": "线性降维 (PCA)",
+      "type": "step",
+      "description": "使用主成分分析将高维基因表达数据投影到低维空间，保留主要变异来源。",
+      "difficulty": "intermediate",
+      "tags": [
+        "scRNA-seq",
+        "dimensionality-reduction",
+        "pca"
+      ],
+      "source": "manual",
+      "last_updated": "2026-04-02",
+      "input": "归一化后的高变基因矩阵",
+      "output": "主成分坐标（PC scores）",
+      "key_params": [
+        {
+          "name": "npcs",
+          "description": "保留的主成分数量",
+          "default": "30"
+        }
+      ],
+      "detailed_explanation": "单细胞数据通常包含 2 万多个基因维度，直接计算细胞间距离非常稀疏且噪音大。PCA 通过线性变换将数据投影到一组正交的主成分上，每个主成分代表一个独立的变异来源。\n通常保留前 30-50 个主成分用于下游分析，这些主成分已经捕获了大部分生物学信号（如细胞类型差异、细胞周期状态），同时有效降低了计算复杂度和技术噪音。Elbow plot 和 JackStraw 分析可用于辅助确定最佳 PC 数量。\n"
     },
     {
       "id": "quality-control",
@@ -86,7 +276,8 @@
           "description": "接头序列，用于去除接头污染",
           "default": "auto-detect"
         }
-      ]
+      ],
+      "detailed_explanation": "质量控制是确保 ATAC-seq 数据可靠性的第一道关口，必须在进入下游分析之前系统评估。关键质控指标包括：1) 碱基质量：Q30 比例应 > 85%，确保测序准确性；2) 接头污染：接头序列比例应 < 10%，过高会影响比对率；3) 重复率：PCR 重复比例理想情况下 < 20-30%，过高提示文库复杂度不足；4) 线粒体 reads 比例：ATAC-seq 中线粒体 DNA 通常占 10-50%，过高的比例（> 60%）可能提示细胞状态不佳或核膜破裂；5) 比对率：唯一比对率应 > 70%；6) Fragment size 分布：应呈现明显的核小体周期性峰（~50 bp NFR、~200 bp 单核小体、~400 bp 双核小体），这是 ATAC-seq 数据质量的\"指纹\"特征。综合这些指标，可以判断实验是否成功、是否需要重新建库或调整分析参数。常用质控工具包括 FastQC、MultiQC 和 ATACseqQC。"
     },
     {
       "id": "peak-annotation",
@@ -108,7 +299,8 @@
           "description": "距离 TSS 的最大范围",
           "default": "3000"
         }
-      ]
+      ],
+      "detailed_explanation": "Peak 注释步骤将 peak calling 得到的基因组坐标转化为可理解的生物学功能和调控关联。首先，使用注释工具（如 ChIPseeker、HOMER annotatePeaks、GREAT）将每个 peak 分配到最近的基因（通常按 TSS 距离排序）和基因组功能区（启动子、5'UTR、外显子、内含子、基因间区）。启动子区（通常定义为 TSS ± 3 kb）的 peaks 通常与基因转录激活直接相关；基因间区的 peaks 则可能是远程增强子或沉默子。其次，进行 motif 富集分析（HOMER、MEME-ChIP），识别在这些开放区域中富集的转录因子结合 motif，从而推断调控网络。最后，对 peak 关联基因进行功能富集分析（clusterProfiler、DAVID、Enrichr），揭示这些基因参与的 GO 生物学过程、KEGG 代谢通路和疾病关联。注释结果通常以表格和可视化图（如 peak 分布饼图、TSS 热图、通路气泡图）的形式呈现。"
     },
     {
       "id": "peak-calling-step",
@@ -135,7 +327,8 @@
           "description": "是否跳过模型构建",
           "default": "false"
         }
-      ]
+      ],
+      "detailed_explanation": "Peak 识别步骤使用专门的统计算法从比对后的 BAM 文件中检测显著的 reads 富集区域，即染色质开放位点。针对 ATAC-seq 数据，最核心的工具是 MACS2，其 callpeak 命令通过比较每个基因组窗口的 reads 密度与局部背景（考虑测序深度和信号波动）来判断显著性。由于 ATAC-seq 没有 Input 对照，MACS2 会自动构建局部 lambda 背景模型。关键参数调优包括：--nomodel（跳过模型构建，直接指定 shift/extsize）、--shift -75（将 reads 向 3' 端偏移 75 bp）、--extsize 150（将片段扩展至 150 bp 以模拟核小体-Free 片段中心）、-q 0.05（q-value 阈值）。输出文件主要包括 NarrowPeak（包含 peak 坐标、信号强度、p-value、q-value 和 peak summit 位置）和 bedGraph/bigWig（用于基因组浏览器可视化）。评估 peak calling 质量的常用指标是 FRiP（Fraction of Reads in Peaks），优质 ATAC-seq 数据的 FRiP 通常在 0.2-0.5 之间。"
     },
     {
       "id": "batch-effect",
@@ -155,7 +348,27 @@
       "related_tools": [
         "harmony",
         "combat"
-      ]
+      ],
+      "detailed_explanation": "批次效应是多组学高通量数据中普遍存在的系统性变异，来源于实验操作、时间、试剂批次、测序仪、测序 lane 甚至数据处理流程等非生物学因素。在 ATAC-seq 中，批次效应可能表现为：相同样本在不同批次中产生的 peaks 数量和信号强度差异、PCA 或 t-SNE 聚类图中样本按批次而非生物学分组聚集、差异分析中出现大量假阳性或真阳性信号被掩盖。识别批次效应的方法包括可视化（PCA、UMAP、热图）、统计检验（ANOVA、PERMANOVA）和量化指标（如 silhouette score）。校正策略分为实验设计层面（随机化样本分配、使用内参标准品）和计算层面（ComBat、Harmony、MNN、RUV-seq、PEER 等算法）。需要注意的是，批次校正应在去除技术噪音后、差异分析之前进行，且过度校正可能消除真实的生物学信号。"
+    },
+    {
+      "id": "doublets",
+      "name": "双细胞（Doublets）",
+      "type": "issue",
+      "description": "两个或多个细胞在液滴或微孔中被同时捕获并测序，导致其表达谱被错误地视为一个细胞。",
+      "difficulty": "intermediate",
+      "tags": [
+        "scRNA-seq",
+        "qc",
+        "artifacts"
+      ],
+      "source": "manual",
+      "last_updated": "2026-04-02",
+      "solution": "1. 实验层面：优化细胞加载密度，减少双细胞形成概率\n2. 计算层面：使用 DoubletFinder、Scrublet、Solo 或 ScDblFinder 等算法检测并移除双细胞\n3. 分析层面：在聚类后检查是否存在跨细胞类型的\"混合\"簇，进一步验证双细胞去除效果\n",
+      "related_tools": [
+        "seurat"
+      ],
+      "detailed_explanation": "双细胞是 scRNA-seq 中最常见的技术噪音之一，会严重影响细胞聚类和差异分析的准确性。双细胞通常表现为：检测到的基因数（nFeature）和总 UMI 数（nCount）异常高；表达谱呈现两种不同细胞类型的混合特征。\n常用的双细胞检测算法包括：Scrublet（基于模拟双细胞和最近邻分类）、DoubletFinder（基于 pN-pK 参数优化的聚类预测）、Solo（基于深度生成模型）和 ScDblFinder（综合多种方法，准确率高且运行快）。\n双细胞去除应在质控之后、聚类之前进行。对于不同实验平台，双细胞率的经验值约为：10x Genomics ~ 3.9% per 1000 cells loaded。研究者应根据实验设计和细胞数量合理估计并设定去除阈值。\n"
     },
     {
       "id": "bowtie2",
@@ -192,7 +405,14 @@
           "description": "使用高灵敏度预设参数",
           "default": "false"
         }
-      ]
+      ],
+      "detailed_explanation": "Bowtie2 是一款基于 Burrows-Wheeler 变换（BWT）和 FM 索引的全基因组短序列比对工具，由 Johns Hopkins University 的 Langmead 实验室开发。相比其前代 Bowtie1，Bowtie2 引入了完全基于_seed_的启发式搜索和动态规划扩展算法，支持局部比对（local alignment）、gapped alignment 和 discordant paired-end 比对，能够更好地处理 reads 末端的错配和插入缺失（INDEL）。在 ATAC-seq 中，由于 Tn5 转座酶切割产生的片段可能跨越核小体边界或含有基因组变异导致的序列差异，Bowtie2 的局部比对模式（--local）和敏感模式（--very-sensitive）被广泛推荐。其索引构建速度快、内存占用低（人类基因组索引约 3-4 GB）、比对速度快的特点，使其成为 ATAC-seq、ChIP-seq 和 CUT&Tag 数据的标准比对工具之一。此外，Bowtie2 支持 SAM 格式输出、多线程（-p）和自定义比对质量阈值，易于与 Snakemake、Nextflow 等流程管理工具整合。",
+      "auto_fetched": {
+        "latest_version": "v2.5.5",
+        "release_url": "https://github.com/BenLangmead/bowtie2/releases/tag/v2.5.5",
+        "published_at": "2026-02-17T03:48:37Z",
+        "fetched_at": "2026-04-01T16:47:46.029373"
+      }
     },
     {
       "id": "macs2",
@@ -240,7 +460,93 @@
           "description": "扩展片段大小",
           "default": "150"
         }
-      ]
+      ],
+      "detailed_explanation": "MACS2 (Model-based Analysis of ChIP-seq 2) 是由 Xiaole Shirley Liu 实验室开发的一款基于泊松分布模型的 peak calling 工具，广泛应用于 ChIP-seq、ATAC-seq、DNase-seq 和 CUT&Tag 数据的开放区域或蛋白结合位点检测。MACS2 的核心算法通过比较每个基因组窗口的 reads 密度与局部背景噪音（local lambda），动态评估信号显著性。针对 ATAC-seq 数据，MACS2 提供了专门的参数组合：--nomodel（跳过双峰模型构建，因为 ATAC-seq 的 fragment size 分布与 ChIP-seq 不同）、--shift -75 和 --extsize 150（模拟 150 bp 的核小体-Free 片段中心位置，修正 Tn5 插入偏移）。MACS2 的输出包括标准的 NarrowPeak/BED 格式文件、bedGraph 信号文件（可用于 IGV/UCSC 基因组浏览器）和 summit 文件。其内置的 IDR（Irreproducible Discovery Rate）支持和差异 peak 分析模块（bdgdiff）进一步扩展了其在比较表观基因组学中的应用。",
+      "auto_fetched": {
+        "latest_version": "v3.0.4",
+        "release_url": "https://github.com/macs3-project/MACS/releases/tag/v3.0.4",
+        "published_at": "2026-02-23T20:46:25Z",
+        "fetched_at": "2026-04-01T16:47:45.567215"
+      }
+    },
+    {
+      "id": "seurat",
+      "name": "Seurat",
+      "type": "tool",
+      "description": "R 语言中最流行的单细胞转录组数据分析工具包，提供完整的质控、归一化、降维、聚类和可视化流程。",
+      "difficulty": "intermediate",
+      "tags": [
+        "scRNA-seq",
+        "R",
+        "clustering",
+        "visualization"
+      ],
+      "source": "manual",
+      "last_updated": "2026-04-02",
+      "version": "5.0.1",
+      "install_cmd": "install.packages('Seurat')",
+      "doc_url": "https://satijalab.org/seurat/",
+      "pros": [
+        "功能全面，文档和社区极其丰富",
+        "支持多种数据整合和批次校正方法（CCA, RPCA, Harmony）",
+        "提供交互式可视化工具和拟时序分析模块"
+      ],
+      "cons": [
+        "R 环境依赖较多，大数据集内存占用大",
+        "部分高级功能需要安装额外的包"
+      ],
+      "key_params": [
+        {
+          "name": "dims",
+          "description": "用于聚类和 UMAP 的主成分维度",
+          "default": "1:30"
+        },
+        {
+          "name": "resolution",
+          "description": "聚类分辨率",
+          "default": "0.8"
+        }
+      ],
+      "detailed_explanation": "Seurat 是由 Satija Lab 开发的 R 包，是目前单细胞领域引用率最高、生态最完善的数据分析工具。其核心工作流包括：CreateSeuratObject、QC 过滤、Normalization、FindVariableFeatures、ScaleData、RunPCA、RunUMAP、FindNeighbors、FindClusters 和 FindAllMarkers。\nSeurat v5 引入了基于 sketch 的集成分析（sketch-based integration），可以在不损失精度的前提下分析百万级细胞的数据集。此外，Seurat 还提供了丰富的扩展功能，包括空间转录组分析（Seurat v5 + SCTransform）、多模态分析（CITE-seq, scATAC+RNA）和转录调控网络推断（SCENIC）。\n"
+    },
+    {
+      "id": "cellranger",
+      "name": "Cell Ranger",
+      "type": "tool",
+      "description": "10x Genomics 官方提供的 scRNA-seq 数据处理流程，用于从原始测序数据生成基因表达矩阵。",
+      "difficulty": "beginner",
+      "tags": [
+        "scRNA-seq",
+        "10x-genomics",
+        "preprocessing"
+      ],
+      "source": "manual",
+      "last_updated": "2026-04-02",
+      "version": "7.1.0",
+      "install_cmd": "下载 10x Genomics 官方预编译二进制文件",
+      "doc_url": "https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger",
+      "pros": [
+        "与 10x 平台完美兼容，输出格式标准化",
+        "包含比对、定量、聚类和差异分析的一站式流程",
+        "支持多组学数据（如 Cell Ranger ARC）"
+      ],
+      "cons": [
+        "仅支持 10x Genomics 数据",
+        "计算资源需求较高"
+      ],
+      "key_params": [
+        {
+          "name": "--transcriptome",
+          "description": "参考转录组索引路径",
+          "default": "required"
+        },
+        {
+          "name": "--fastqs",
+          "description": "原始 FASTQ 文件目录",
+          "default": "required"
+        }
+      ],
+      "detailed_explanation": "Cell Ranger 是 10x Genomics 官方推出的单细胞数据分析软件套件，核心模块包括：cellranger mkfastq（将 BCL 文件转换为 FASTQ）、cellranger count（比对、定量和生成 feature-barcode 矩阵）和 cellranger aggr（合并多个样本的计数结果）。\n其比对步骤基于 STAR 算法，定量基于 GTF 注释文件。输出结果包括过滤后的表达矩阵（filtered_feature_bc_matrix）、质控报告（web_summary.html）和细胞聚类预览（基于 Louvain 聚类的 t-SNE 图）。\n对于非 10x 平台的数据（如 Smart-seq2、Drop-seq），需要使用其他工具如 STARsolo、alevin 或 zUMIs。\n"
     },
     {
       "id": "macs2-doc",
@@ -256,7 +562,8 @@
       "source": "manual",
       "last_updated": "2026-04-01",
       "url": "https://github.com/macs3-project/MACS",
-      "resource_type": "documentation"
+      "resource_type": "documentation",
+      "detailed_explanation": "MACS2 官方文档是学习和使用该工具最权威的资料来源，内容涵盖安装指南、命令行参数详解、标准分析流程、高级使用技巧和常见问题解答。对于初学者，建议从 GitHub README 和 Wiki 中的示例脚本入手，理解 callpeak、bdgcmp、bdgdiff 等子命令的基本用法；对于进阶用户，推荐阅读源码中的统计模型说明，深入理解泊松分布、局部 lambda 背景估计、动态峰宽计算等算法细节。文档中还包含了不同数据类型（ChIP-seq、ATAC-seq、CUT&Tag）的参数推荐、bug 修复记录和社区贡献的扩展工具链接。熟练掌握官方文档是进行高质量 peak calling 和故障排查的基础。"
     },
     {
       "id": "fdr",
@@ -295,6 +602,25 @@
       ]
     },
     {
+      "id": "umap",
+      "name": "UMAP",
+      "type": "concept",
+      "description": "一种非线性降维算法，广泛用于单细胞数据的可视化，能够在低维空间中保留细胞间的局部和全局拓扑结构。",
+      "difficulty": "intermediate",
+      "tags": [
+        "scRNA-seq",
+        "dimensionality-reduction",
+        "visualization"
+      ],
+      "source": "manual",
+      "last_updated": "2026-04-02",
+      "detailed_explanation": "UMAP（Uniform Manifold Approximation and Projection）是一种基于流形学习和拓扑数据理论的降维算法。与 t-SNE 相比，UMAP 在保持局部结构的同时更好地保留了全局结构（如簇间的相对距离），且计算速度更快、可扩展到更大规模的数据集。\n在 scRNA-seq 分析中，UMAP 通常作用于 PCA 降维后的结果（前 10-50 个主成分），通过构建高维空间的模糊拓扑表示，并在低维空间中找到最优映射。关键参数 n_neighbors 控制局部与全局结构的平衡：较小的值（5-15）强调局部细节，较大的值（30-50）保留更多全局拓扑。\n需要特别注意的是，UMAP 是一种可视化工具，其嵌入空间中的距离不具有生物学上的严格定量意义，不能直接用于推断细胞间的真实转录组相似性。\n",
+      "common_misconceptions": [
+        "UMAP 图上的距离可以直接用来判断细胞相似性（错误，UMAP 主要保留拓扑结构而非精确距离）",
+        "UMAP 结果在不同的运行中完全一致（错误，由于随机初始化，多次运行可能有轻微差异）"
+      ]
+    },
+    {
       "id": "atac-seq",
       "name": "ATAC-seq",
       "type": "assay",
@@ -306,7 +632,23 @@
         "chromatin-accessibility"
       ],
       "source": "manual",
-      "last_updated": "2026-04-01"
+      "last_updated": "2026-04-01",
+      "detailed_explanation": "ATAC-seq (Assay for Transposase-Accessible Chromatin using sequencing) 是一种利用高活性 Tn5 转座酶切割并标记开放染色质区域的高通量测序技术。由于 Tn5 酶优先整合到核小体缺失的 DNA 区域，通过对这些片段进行测序，可以在全基因组范围内绘制染色质可及性图谱。ATAC-seq 具有细胞输入量低（500-50,000 个细胞）、实验周期短（数小时）、信噪比高的优势，广泛应用于鉴定启动子、增强子、绝缘子、转录因子结合位子等调控元件，以及研究细胞分化、疾病发生和药物响应中的表观遗传动态变化。"
+    },
+    {
+      "id": "scRNA-seq",
+      "name": "scRNA-seq",
+      "type": "assay",
+      "description": "单细胞转录组测序技术，用于在单个细胞分辨率下解析基因表达谱，揭示细胞异质性、发育轨迹和疾病机制。",
+      "difficulty": "advanced",
+      "tags": [
+        "scRNA-seq",
+        "transcriptomics",
+        "single-cell"
+      ],
+      "source": "manual",
+      "last_updated": "2026-04-02",
+      "detailed_explanation": "单细胞 RNA 测序（single-cell RNA-seq, scRNA-seq）是一类能够在单个细胞水平定量检测转录本表达的高通量技术。与传统 bulk RNA-seq 相比，scRNA-seq 可以揭示组织内不同细胞类型的异质性、识别稀有细胞亚群、重建发育分化轨迹以及解析疾病状态下细胞类型特异性的基因调控变化。\n主流技术平台包括基于微流控的 10x Genomics Chromium（通量高、成本低）、基于微孔板的 Smart-seq2（全长覆盖、适合低丰度转录本）、以及基于组合索引的 Split-seq 和 sci-RNA-seq（超高通量）。\nscRNA-seq 的核心分析流程包括：数据预处理（比对、定量、质控）、归一化与降维（PCA、UMAP/t-SNE）、细胞聚类与注释、差异表达分析、拟时序分析（pseudotime）、细胞通讯分析和转录因子活性推断。由于其高维度、高噪音和高缺失率（dropout）的特点，scRNA-seq 分析对计算资源和统计方法提出了较高要求。\n"
     }
   ],
   "edges": [
@@ -415,6 +757,138 @@
     {
       "source": "macs2",
       "target": "atac-seq",
+      "relation": "applies_to",
+      "properties": {}
+    },
+    {
+      "source": "scRNA-seq",
+      "target": "scrna-preprocessing",
+      "relation": "has_stage",
+      "properties": {}
+    },
+    {
+      "source": "scRNA-seq",
+      "target": "scrna-clustering",
+      "relation": "has_stage",
+      "properties": {}
+    },
+    {
+      "source": "scRNA-seq",
+      "target": "scrna-de",
+      "relation": "has_stage",
+      "properties": {}
+    },
+    {
+      "source": "scrna-preprocessing",
+      "target": "scrna-qc",
+      "relation": "has_step",
+      "properties": {}
+    },
+    {
+      "source": "scrna-preprocessing",
+      "target": "scrna-normalization",
+      "relation": "has_step",
+      "properties": {}
+    },
+    {
+      "source": "scrna-clustering",
+      "target": "scrna-pca",
+      "relation": "has_step",
+      "properties": {}
+    },
+    {
+      "source": "scrna-clustering",
+      "target": "scrna-clustering-step",
+      "relation": "has_step",
+      "properties": {}
+    },
+    {
+      "source": "scrna-de",
+      "target": "scrna-de-step",
+      "relation": "has_step",
+      "properties": {}
+    },
+    {
+      "source": "scrna-qc",
+      "target": "scrna-normalization",
+      "relation": "prerequisite_for",
+      "properties": {}
+    },
+    {
+      "source": "scrna-normalization",
+      "target": "scrna-pca",
+      "relation": "prerequisite_for",
+      "properties": {}
+    },
+    {
+      "source": "scrna-pca",
+      "target": "scrna-clustering-step",
+      "relation": "prerequisite_for",
+      "properties": {}
+    },
+    {
+      "source": "scrna-clustering-step",
+      "target": "scrna-de-step",
+      "relation": "prerequisite_for",
+      "properties": {}
+    },
+    {
+      "source": "scrna-qc",
+      "target": "doublets",
+      "relation": "has_issue",
+      "properties": {}
+    },
+    {
+      "source": "scrna-pca",
+      "target": "umap",
+      "relation": "requires_concept",
+      "properties": {}
+    },
+    {
+      "source": "scrna-qc",
+      "target": "cellranger",
+      "relation": "uses_tool",
+      "properties": {
+        "recommended": true,
+        "note": "10x Genomics 数据预处理首选"
+      }
+    },
+    {
+      "source": "scrna-normalization",
+      "target": "seurat",
+      "relation": "uses_tool",
+      "properties": {
+        "recommended": true,
+        "note": "scRNA-seq 分析最主流工具"
+      }
+    },
+    {
+      "source": "scrna-clustering-step",
+      "target": "seurat",
+      "relation": "uses_tool",
+      "properties": {
+        "recommended": true,
+        "note": "Seurat 提供完整的聚类和 UMAP 流程"
+      }
+    },
+    {
+      "source": "scrna-de-step",
+      "target": "seurat",
+      "relation": "uses_tool",
+      "properties": {
+        "recommended": true,
+        "note": "Seurat FindAllMarkers 标准流程"
+      }
+    },
+    {
+      "source": "cellranger",
+      "target": "scRNA-seq",
+      "relation": "applies_to",
+      "properties": {}
+    },
+    {
+      "source": "seurat",
+      "target": "scRNA-seq",
       "relation": "applies_to",
       "properties": {}
     }

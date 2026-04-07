@@ -3,6 +3,12 @@ name: ATAC-seq
 type: assay
 description: 利用转座酶可及性分析染色质开放区域的高通量测序技术，用于鉴定调控元件和潜在增强子。
 difficulty: intermediate
-tags: ["atac-seq", "epigenomics", "chromatin-accessibility"]
+tags:
+- atac-seq
+- epigenomics
+- chromatin-accessibility
 source: manual
-last_updated: "2026-04-01"
+last_updated: '2026-04-01'
+detailed_explanation: ATAC-seq (Assay for Transposase-Accessible Chromatin using sequencing)
+  是一种利用高活性 Tn5 转座酶切割并标记开放染色质区域的高通量测序技术。由于 Tn5 酶优先整合到核小体缺失的 DNA 区域，通过对这些片段进行测序，可以在全基因组范围内绘制染色质可及性图谱。ATAC-seq
+  具有细胞输入量低（500-50,000 个细胞）、实验周期短（数小时）、信噪比高的优势，广泛应用于鉴定启动子、增强子、绝缘子、转录因子结合位子等调控元件，以及研究细胞分化、疾病发生和药物响应中的表观遗传动态变化。

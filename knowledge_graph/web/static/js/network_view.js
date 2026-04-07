@@ -1,4 +1,4 @@
-const typeColors = {
+var typeColors = {
   assay: '#3b82f6',
   stage: '#22c55e',
   step: '#f97316',
@@ -14,12 +14,10 @@ class NetworkView {
     this.container = document.querySelector(containerSelector);
     this.width = this.container.clientWidth;
     this.height = this.container.clientHeight;
-    this.g = this.svg.append('g');
-    
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 4])
       .on('zoom', (event) => {
-        this.g.attr('transform', event.transform);
+        if (this.g) this.g.attr('transform', event.transform);
       });
     this.svg.call(this.zoom);
     
@@ -51,7 +49,8 @@ class NetworkView {
       n.links = linkCounts[n.id] || 0;
     });
 
-    this.g.selectAll('*').remove();
+    this.svg.selectAll('*').remove();
+    this.g = this.svg.append('g');
     
     this.simulation = d3.forceSimulation(this.nodes)
       .force('link', d3.forceLink(this.edges).id(d => d.id).distance(100))

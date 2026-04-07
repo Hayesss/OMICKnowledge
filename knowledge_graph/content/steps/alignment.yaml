@@ -3,12 +3,21 @@ name: 序列比对
 type: step
 description: 将过滤后的 reads 比对到参考基因组，生成 BAM 文件。
 difficulty: beginner
-tags: ["atac-seq", "alignment", "preprocessing"]
+tags:
+- atac-seq
+- alignment
+- preprocessing
 source: manual
-last_updated: "2026-04-01"
-input: "过滤后的 FASTQ 文件"
-output: "BAM 文件"
+last_updated: '2026-04-01'
+input: 过滤后的 FASTQ 文件
+output: BAM 文件
 key_params:
-  - name: max_insert_size
-    description: 最大插入片段大小
-    default: "1000"
+- name: max_insert_size
+  description: 最大插入片段大小
+  default: '1000'
+detailed_explanation: 序列比对是将经过质控的 clean reads 精确映射到参考基因组坐标的过程，是连接原始测序数据与生物学解释的桥梁。ATAC-seq
+  数据通常长度较短（<100 bp）且插入片段大小不一，因此需要选择支持局部比对（local alignment）和 gapped alignment 的工具。Bowtie2
+  是 ATAC-seq 最常用的比对器，其 --very-sensitive 参数可以在灵敏度、速度和准确性之间取得良好平衡。由于 ATAC-seq 的 Tn5
+  片段可能跨越核小体边界或含有 INDEL，-X 参数（最大插入片段大小，通常设为 1000-2000 bp）能帮助捕获较长的单核小体/双核小体片段。比对后需要进行严格过滤：去除未比对（unmapped）、多比对（multimapping,
+  MAPQ < 30）和 PCR 重复 reads（duplicates），以保证进入 peak calling 的 reads 具有唯一的基因组来源和高置信度。最终输出为排序后的
+  BAM 文件及其索引（BAI）。

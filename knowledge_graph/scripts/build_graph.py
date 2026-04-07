@@ -8,6 +8,29 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from validate import load_entities
 
 
+def merge_tool_auto_data(entities, content_dir):
+    """Merge automatically fetched tool info into existing tool entities."""
+    tools_auto_dir = os.path.join(content_dir, 'tools_auto')
+    if not os.path.isdir(tools_auto_dir):
+        return
+    for filename in os.listdir(tools_auto_dir):
+        if not filename.endswith('.yaml'):
+            continue
+        filepath = os.path.join(tools_auto_dir, filename)
+        with open(filepath, 'r', encoding='utf-8') as f:
+            data = yaml.safe_load(f)
+        if not data:
+            continue
+        tool_id = data.get('tool_id')
+        if tool_id and tool_id in entities:
+            entities[tool_id]['auto_fetched'] = {
+                'latest_version': data.get('data', {}).get('latest_version'),
+                'release_url': data.get('data', {}).get('release_url'),
+                'published_at': data.get('data', {}).get('published_at'),
+                'fetched_at': data.get('fetched_at'),
+            }
+
+
 def build_graph(entities, edges, output_path=None):
     """Build a graph structure from entities and edges.
     
@@ -51,6 +74,7 @@ def main():
     output_path = os.path.join(base_dir, 'web', 'data', 'graph.json')
 
     entities = load_entities(content_dir)
+    merge_tool_auto_data(entities, content_dir)
 
     with open(edges_path, 'r', encoding='utf-8') as f:
         edges_data = yaml.safe_load(f) or {}

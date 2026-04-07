@@ -100,7 +100,7 @@ def test_load_entities_duplicate_id():
         subdir = os.path.join(tmpdir, 'test')
         os.makedirs(subdir)
         for name in ['a.yaml', 'b.yaml']:
-            with open(os.path.join(subdir, name), 'w') as f:
+            with open(os.path.join(subdir, name), 'w', encoding='utf-8') as f:
                 yaml.safe_dump({'id': 'dup'}, f)
         try:
             load_entities(tmpdir)

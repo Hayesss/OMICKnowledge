@@ -1,31 +1,42 @@
 id: macs2
 name: MACS2
 type: tool
-description: 最常用的 ChIP-seq 和 ATAC-seq peak calling 工具，支持 narrow、broad 和 gapped peak 模型。
+description: 最常用的 ChIP-seq 和 ATAC-seq peak calling 工具，支持 narrow、broad 和 gapped peak
+  模型。
 difficulty: beginner
-tags: ["atac-seq", "cut-tag", "peak-calling"]
+tags:
+- atac-seq
+- cut-tag
+- peak-calling
 source: manual
-last_updated: "2026-04-01"
-version: "2.2.9.1"
-install_cmd: "pip install MACS2"
-doc_url: "https://github.com/macs3-project/MACS"
+last_updated: '2026-04-01'
+version: 2.2.9.1
+install_cmd: pip install MACS2
+doc_url: https://github.com/macs3-project/MACS
 pros:
-  - 社区广泛使用，文档丰富
-  - 支持多种 peak 模型
-  - 可生成 bedGraph 用于可视化
+- 社区广泛使用，文档丰富
+- 支持多种 peak 模型
+- 可生成 bedGraph 用于可视化
 cons:
-  - 对 CUT&Tag 数据可能需要调整参数
-  - 大样本运行时内存占用较高
+- 对 CUT&Tag 数据可能需要调整参数
+- 大样本运行时内存占用较高
 key_params:
-  - name: -q
-    description: q-value 阈值
-    default: "0.05"
-  - name: --nomodel
-    description: 跳过模型构建，适用于 ATAC-seq
-    default: "false"
-  - name: --shift
-    description:  reads 偏移量
-    default: "-75"
-  - name: --extsize
-    description: 扩展片段大小
-    default: "150"
+- name: -q
+  description: q-value 阈值
+  default: '0.05'
+- name: --nomodel
+  description: 跳过模型构建，适用于 ATAC-seq
+  default: 'false'
+- name: --shift
+  description: reads 偏移量
+  default: '-75'
+- name: --extsize
+  description: 扩展片段大小
+  default: '150'
+detailed_explanation: MACS2 (Model-based Analysis of ChIP-seq 2) 是由 Xiaole Shirley
+  Liu 实验室开发的一款基于泊松分布模型的 peak calling 工具，广泛应用于 ChIP-seq、ATAC-seq、DNase-seq 和 CUT&Tag
+  数据的开放区域或蛋白结合位点检测。MACS2 的核心算法通过比较每个基因组窗口的 reads 密度与局部背景噪音（local lambda），动态评估信号显著性。针对
+  ATAC-seq 数据，MACS2 提供了专门的参数组合：--nomodel（跳过双峰模型构建，因为 ATAC-seq 的 fragment size 分布与
+  ChIP-seq 不同）、--shift -75 和 --extsize 150（模拟 150 bp 的核小体-Free 片段中心位置，修正 Tn5 插入偏移）。MACS2
+  的输出包括标准的 NarrowPeak/BED 格式文件、bedGraph 信号文件（可用于 IGV/UCSC 基因组浏览器）和 summit 文件。其内置的
+  IDR（Irreproducible Discovery Rate）支持和差异 peak 分析模块（bdgdiff）进一步扩展了其在比较表观基因组学中的应用。

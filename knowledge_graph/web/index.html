@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>多组学分析知识图谱</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
   <link rel="stylesheet" href="static/css/style.css">
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dagre@0.8.5/dist/dagre.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/d3-dagre@0.1.2/dist/d3-dagre.min.js"></script>
+  <script src="static/js/d3.v7.min.js"></script>
+  <script src="static/js/dagre.min.js"></script>
 </head>
 <body>
   <header class="top-bar">
@@ -16,6 +16,10 @@
       <button id="btn-network" class="active" aria-pressed="true">网络视图</button>
       <button id="btn-flow" aria-pressed="false">流程视图</button>
     </nav>
+    <div class="assay-selector">
+      <label for="assay-select">组学:</label>
+      <select id="assay-select" aria-label="选择组学"></select>
+    </div>
     <div class="search-box">
       <input type="text" id="search-input" placeholder="搜索节点..." aria-label="搜索节点">
       <div id="search-results" class="search-results" aria-live="polite"></div>

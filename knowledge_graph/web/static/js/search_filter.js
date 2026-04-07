@@ -25,10 +25,20 @@ class SearchFilter {
     this.filterTags = document.getElementById('filter-tags');
     this.filterDifficulty = document.getElementById('filter-difficulty');
     
-    this.initFilters();
-    this.initSearch();
     this.onFilterChange = null;
     this.onSearchSelect = null;
+    
+    this.initFilters();
+    this.initSearch();
+  }
+
+  rebuild(graphData) {
+    this.data = graphData;
+    this.filterTypes.innerHTML = '';
+    this.filterTags.innerHTML = '';
+    const diffRadios = this.filterDifficulty.querySelectorAll('input');
+    diffRadios.forEach(rb => { rb.checked = (rb.value === 'all'); });
+    this.initFilters();
   }
 
   initFilters() {

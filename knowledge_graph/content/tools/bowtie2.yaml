@@ -3,22 +3,31 @@ name: Bowtie2
 type: tool
 description: 快速且内存高效的短序列比对工具，广泛用于 ATAC-seq 和 ChIP-seq 数据的比对。
 difficulty: beginner
-tags: ["atac-seq", "alignment", "cut-tag"]
+tags:
+- atac-seq
+- alignment
+- cut-tag
 source: manual
-last_updated: "2026-04-01"
-version: "2.5.1"
-install_cmd: "conda install -c bioconda bowtie2"
-doc_url: "https://bowtie-bio.sourceforge.net/bowtie2/manual.shtml"
+last_updated: '2026-04-01'
+version: 2.5.1
+install_cmd: conda install -c bioconda bowtie2
+doc_url: https://bowtie-bio.sourceforge.net/bowtie2/manual.shtml
 pros:
-  - 比对速度快
-  - 支持局部比对和嵌合比对
-  - 内存占用相对较低
+- 比对速度快
+- 支持局部比对和嵌合比对
+- 内存占用相对较低
 cons:
-  - 对长 reads 支持不如 BWA-MEM
+- 对长 reads 支持不如 BWA-MEM
 key_params:
-  - name: -X
-    description: 最大插入片段大小
-    default: "1000"
-  - name: --very-sensitive
-    description: 使用高灵敏度预设参数
-    default: "false"
+- name: -X
+  description: 最大插入片段大小
+  default: '1000'
+- name: --very-sensitive
+  description: 使用高灵敏度预设参数
+  default: 'false'
+detailed_explanation: Bowtie2 是一款基于 Burrows-Wheeler 变换（BWT）和 FM 索引的全基因组短序列比对工具，由 Johns
+  Hopkins University 的 Langmead 实验室开发。相比其前代 Bowtie1，Bowtie2 引入了完全基于_seed_的启发式搜索和动态规划扩展算法，支持局部比对（local
+  alignment）、gapped alignment 和 discordant paired-end 比对，能够更好地处理 reads 末端的错配和插入缺失（INDEL）。在
+  ATAC-seq 中，由于 Tn5 转座酶切割产生的片段可能跨越核小体边界或含有基因组变异导致的序列差异，Bowtie2 的局部比对模式（--local）和敏感模式（--very-sensitive）被广泛推荐。其索引构建速度快、内存占用低（人类基因组索引约
+  3-4 GB）、比对速度快的特点，使其成为 ATAC-seq、ChIP-seq 和 CUT&Tag 数据的标准比对工具之一。此外，Bowtie2 支持 SAM
+  格式输出、多线程（-p）和自定义比对质量阈值，易于与 Snakemake、Nextflow 等流程管理工具整合。

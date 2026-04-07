@@ -3,6 +3,13 @@ name: 注释与解读
 type: stage
 description: 对鉴定出的 peaks 进行基因组注释，关联到附近的基因和调控元件。
 difficulty: intermediate
-tags: ["atac-seq", "annotation", "functional-analysis"]
+tags:
+- atac-seq
+- annotation
+- functional-analysis
 source: manual
-last_updated: "2026-04-01"
+last_updated: '2026-04-01'
+detailed_explanation: 注释与解读阶段将抽象的基因组坐标（peaks）转化为具体的生物学功能和调控机制。该阶段通常包括三个层次的分析：1) 基因组位置注释，利用
+  ChIPseeker、HOMER 或 GREAT 等工具，将 peaks 映射到最近的基因（通常以转录起始位点 TSS 为中心），并分类到启动子、5'UTR、外显子、内含子、基因间区等基因组特征；2)
+  调控元件注释，通过与已知的增强子、沉默子、绝缘子数据库（如 VISTA Enhancer Browser、FANTOM5、ENCODE cCRE）比对，识别潜在的功能性调控序列；3)
+  功能富集分析，对 peak 关联基因进行 GO（Gene Ontology）、KEGG 通路、GSEA 和 motif 富集分析（如使用 HOMER、MEME-ChIP），揭示转录因子结合模式、信号通路激活状态和疾病关联。高质量的注释结果可以帮助研究者从海量的表观基因组数据中提炼出有意义的生物学假设。

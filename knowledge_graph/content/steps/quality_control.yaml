@@ -3,12 +3,21 @@ name: 质量控制
 type: step
 description: 评估原始测序数据质量，检查接头污染、测序深度、重复率等指标。
 difficulty: beginner
-tags: ["atac-seq", "qc", "preprocessing"]
+tags:
+- atac-seq
+- qc
+- preprocessing
 source: manual
-last_updated: "2026-04-01"
-input: "原始 FASTQ 文件"
-output: "质控报告（HTML/TXT）"
+last_updated: '2026-04-01'
+input: 原始 FASTQ 文件
+output: 质控报告（HTML/TXT）
 key_params:
-  - name: adapter_sequence
-    description: 接头序列，用于去除接头污染
-    default: "auto-detect"
+- name: adapter_sequence
+  description: 接头序列，用于去除接头污染
+  default: auto-detect
+detailed_explanation: 质量控制是确保 ATAC-seq 数据可靠性的第一道关口，必须在进入下游分析之前系统评估。关键质控指标包括：1) 碱基质量：Q30
+  比例应 > 85%，确保测序准确性；2) 接头污染：接头序列比例应 < 10%，过高会影响比对率；3) 重复率：PCR 重复比例理想情况下 < 20-30%，过高提示文库复杂度不足；4)
+  线粒体 reads 比例：ATAC-seq 中线粒体 DNA 通常占 10-50%，过高的比例（> 60%）可能提示细胞状态不佳或核膜破裂；5) 比对率：唯一比对率应
+  > 70%；6) Fragment size 分布：应呈现明显的核小体周期性峰（~50 bp NFR、~200 bp 单核小体、~400 bp 双核小体），这是
+  ATAC-seq 数据质量的"指纹"特征。综合这些指标，可以判断实验是否成功、是否需要重新建库或调整分析参数。常用质控工具包括 FastQC、MultiQC 和
+  ATACseqQC。

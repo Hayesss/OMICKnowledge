@@ -59,6 +59,27 @@ body {
   border-color: var(--color-primary);
 }
 
+.assay-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.assay-selector label {
+  color: #374151;
+  font-weight: 500;
+}
+
+.assay-selector select {
+  padding: 6px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
 .search-box {
   position: relative;
   flex-shrink: 1;

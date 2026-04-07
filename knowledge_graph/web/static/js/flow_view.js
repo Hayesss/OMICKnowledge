@@ -1,4 +1,4 @@
-const typeColors = {
+var typeColors = {
   assay: '#3b82f6',
   stage: '#22c55e',
   step: '#f97316',
@@ -15,18 +15,17 @@ class FlowView {
     this.container = document.querySelector(containerSelector);
     this.width = this.container.clientWidth;
     this.height = this.container.clientHeight;
-    this.g = this.svg.append('g');
-    
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 2])
       .on('zoom', (event) => {
-        this.g.attr('transform', event.transform);
+        if (this.g) this.g.attr('transform', event.transform);
       });
     this.svg.call(this.zoom);
   }
 
   render(graphData, rootAssayId = null) {
-    this.g.selectAll('*').remove();
+    this.svg.selectAll('*').remove();
+    this.g = this.svg.append('g');
     
     // Build hierarchy from edges
     const nodes = graphData.nodes.map(n => ({...n}));

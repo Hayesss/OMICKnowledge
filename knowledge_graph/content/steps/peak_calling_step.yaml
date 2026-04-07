@@ -3,15 +3,24 @@ name: Peak 识别
 type: step
 description: 使用 peak caller 从 BAM 文件中识别染色质开放区域。
 difficulty: intermediate
-tags: ["atac-seq", "peak-calling"]
+tags:
+- atac-seq
+- peak-calling
 source: manual
-last_updated: "2026-04-01"
-input: "过滤后的 BAM 文件"
-output: "Peak 文件（BED/NarrowPeak）"
+last_updated: '2026-04-01'
+input: 过滤后的 BAM 文件
+output: Peak 文件（BED/NarrowPeak）
 key_params:
-  - name: qvalue
-    description: q-value 阈值
-    default: "0.05"
-  - name: nomodel
-    description: 是否跳过模型构建
-    default: "false"
+- name: qvalue
+  description: q-value 阈值
+  default: '0.05'
+- name: nomodel
+  description: 是否跳过模型构建
+  default: 'false'
+detailed_explanation: Peak 识别步骤使用专门的统计算法从比对后的 BAM 文件中检测显著的 reads 富集区域，即染色质开放位点。针对
+  ATAC-seq 数据，最核心的工具是 MACS2，其 callpeak 命令通过比较每个基因组窗口的 reads 密度与局部背景（考虑测序深度和信号波动）来判断显著性。由于
+  ATAC-seq 没有 Input 对照，MACS2 会自动构建局部 lambda 背景模型。关键参数调优包括：--nomodel（跳过模型构建，直接指定 shift/extsize）、--shift
+  -75（将 reads 向 3' 端偏移 75 bp）、--extsize 150（将片段扩展至 150 bp 以模拟核小体-Free 片段中心）、-q 0.05（q-value
+  阈值）。输出文件主要包括 NarrowPeak（包含 peak 坐标、信号强度、p-value、q-value 和 peak summit 位置）和 bedGraph/bigWig（用于基因组浏览器可视化）。评估
+  peak calling 质量的常用指标是 FRiP（Fraction of Reads in Peaks），优质 ATAC-seq 数据的 FRiP 通常在
+  0.2-0.5 之间。
