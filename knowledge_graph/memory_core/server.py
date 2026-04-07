@@ -202,7 +202,89 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
             })
             return
         
+        # Save YAML entity (for web editor)
+        if path == '/api/save':
+            try:
+                yaml_content = data.get('yaml', '')
+                entity_type = data.get('entityType', '')
+                entity_id = data.get('entityId', '')
+                
+                if not yaml_content or not entity_type or not entity_id:
+                    self._send_error('Missing required fields: yaml, entityType, entityId')
+                    return
+                
+                # Validate YAML
+                import yaml
+                try:
+                    parsed = yaml.safe_load(yaml_content)
+                    if not parsed or not isinstance(parsed, dict):
+                        self._send_error('Invalid YAML format')
+                        return
+                except yaml.YAMLError as e:
+                    self._send_error(f'YAML parse error: {str(e)}')
+                    return
+                
+                # Determine file path
+                project_root = Path(__file__).parent.parent
+                content_dir = project_root / 'content'
+                type_dir = content_dir / entity_type
+                
+                # Create directory if not exists
+                type_dir.mkdir(parents=True, exist_ok=True)
+                
+                # Write YAML file
+                file_path = type_dir / f"{entity_id}.yaml"
+                file_path.write_text(yaml_content, encoding='utf-8')
+                
+                # Trigger background rebuild (optional)
+                # This could be done via subprocess or queue
+                
+                self._send_json({
+                    'success': True,
+                    'message': f'Entity saved to {file_path}',
+                    'path': str(file_path),
+                    'entityId': entity_id
+                })
+                return
+                
+            except Exception as e:
+                self._send_error(f'Save failed: {str(e)}')
+                return
+        
+        # Trigger rebuild (for web editor)
+        if path == '/api/rebuild':
+            try:
+                import subprocess
+                result = subprocess.run(
+                    ['pixi', 'run', 'export-wiki'],
+                    cwd=Path(__file__).parent.parent,
+                    capture_output=True,
+                    text=True,
+                    timeout=30
+                )
+                
+                if result.returncode == 0:
+                    self._send_json({
+                        'success': True,
+                        'message': 'Wiki exported successfully',
+                        'output': result.stdout
+                    })
+                else:
+                    self._send_error(f'Export failed: {result.stderr}')
+                    
+            except Exception as e:
+                self._send_error(f'Rebuild failed: {str(e)}')
+            return
+        
         self._send_error('Not found', 404)
+    
+    def do_OPTIONS(self):
+        """Handle CORS preflight requests."""
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
 
 
 def run_server(store_dir: Path, port: int = 8000, model_name: str = "all-MiniLM-L6-v2"):
@@ -220,6 +302,8 @@ def run_server(store_dir: Path, port: int = 8000, model_name: str = "all-MiniLM-
     print(f"  GET  /related?id=...   - Find related entities")
     print(f"  GET  /stats            - Store statistics")
     print(f"  POST /similar          - Find similar to text")
+    print(f"  POST /api/save         - Save YAML entity (web editor)")
+    print(f"  POST /api/rebuild      - Trigger wiki rebuild")
     print(f"\nPress Ctrl+C to stop")
     
     try:
