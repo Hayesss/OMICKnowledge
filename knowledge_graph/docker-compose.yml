@@ -19,8 +19,10 @@ services:
       start_period: 5s
     networks:
       - kg-network
+    environment:
+      - PYTHONUNBUFFERED=1
 
-  # Optional: Open WebUI integration
+  # Open WebUI
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
     ports:
@@ -28,25 +30,30 @@ services:
     environment:
       - ENABLE_SIGNUP=true
       - DEFAULT_LOCALE=zh-CN
+      - WEBUI_AUTH=True
     volumes:
       - open-webui-data:/app/backend/data
     restart: unless-stopped
     depends_on:
-      kg-api:
-        condition: service_healthy
+      - kg-api
     networks:
       - kg-network
-    # Note: On Linux, add to extra_hosts or use host network
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    # Linux 需要使用 host 网络或配置 host.docker.internal
+    # 生产环境建议配置 OLLAMA_BASE_URL 指向外部 Ollama 服务
 
-  # Optional: Ollama for local LLM
+  # Ollama (可选，本地 LLM 服务)
   ollama:
     image: ollama/ollama
+    ports:
+      - "11434:11434"
     volumes:
       - ollama-data:/root/.ollama
     restart: unless-stopped
-    # Uncomment for GPU support
+    networks:
+      - kg-network
+    # GPU 支持 (可选)
     # deploy:
     #   resources:
     #     reservations:
@@ -54,8 +61,6 @@ services:
     #         - driver: nvidia
     #           count: 1
     #           capabilities: [gpu]
-    networks:
-      - kg-network
 
 networks:
   kg-network:
