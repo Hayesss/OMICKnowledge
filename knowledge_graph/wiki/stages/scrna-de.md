@@ -1,0 +1,39 @@
+# 差异表达分析
+
+## 基本信息
+
+- **ID**: `scrna-de`
+- **类型**: stages
+- **难度**: advanced
+- **标签**: `scRNA-seq`, `differential-expression`, `statistics`
+
+## 描述
+
+比较不同细胞群体间的基因表达差异，识别细胞类型特异性标记和差异调控基因。
+
+## 详细说明
+
+单细胞差异表达分析（DE）是连接细胞异质性与功能调控的桥梁。与 bulk RNA-seq 不同，scRNA-seq 数据具有高稀疏性（dropout）、高噪音和非正态分布的特点，因此需要使用专门的统计方法。
+常用的差异分析方法包括：Wilcoxon rank-sum test（非参数，Seurat 默认）、MAST（考虑 dropout 的混合模型）、DESeq2（基于负二项分布，适合 pseudobulk 聚合分析）和 EdgeR。
+为了避免批次效应和技术噪音导致的假阳性，差异分析通常需要在数据整合和批次校正之后进行。分析结果需要多重检验校正（如 Bonferroni 或 FDR/Benjamini-Hochberg），并以火山图、热图和点图形式可视化。
+差异基因可进一步用于功能富集分析（GO/KEGG）、转录因子活性推断（SCENIC）和细胞通讯分析（CellPhoneDB/Nichenet），从而揭示不同细胞群体在疾病或发育过程中的功能差异。
+
+
+## 相关实体
+
+### has_stage
+
+- ← [scRNA-seq](scRNA-seq.md) - 单细胞转录组测序技术，用于在单个细胞分辨率下解析基因表达谱，揭示细胞异质性、发育轨迹和疾病机制。...
+
+### has_step
+
+- → [差异基因分析](scrna-de-step.md) - 比较不同细胞簇间的基因表达差异，识别细胞类型特异性标记基因。...
+
+## 元信息
+
+- **来源文件**: `content/stages/scrna_de.yaml`
+- **最后更新**: 2026-04-07 19:43
+
+---
+
+*本页面由 llm-wiki 系统自动生成，保持与 YAML 源文件同步*

@@ -53,3 +53,20 @@ start-memory = { depends-on = ["build-memory", "serve-memory"] }
 
 # 仅构建和验证（不启动服务器）
 prep = { depends-on = ["validate", "build", "test"] }
+
+# ==================== llm-wiki 任务 ====================
+
+# 导出 YAML 到 Wiki
+export-wiki = { cmd = "python scripts/yaml_to_wiki.py" }
+
+# 导出单个实体到 Wiki
+export-wiki-entity = { cmd = "python scripts/yaml_to_wiki.py --entity" }
+
+# 完整构建（YAML → Wiki → Memory → Graph）
+build-all = { depends-on = ["validate", "export-wiki", "build", "build-memory"] }
+
+# 启动 Wiki 本地服务器（查看生成的 Markdown）
+serve-wiki = { cmd = "python -m http.server 8082", cwd = "wiki" }
+
+# 快速启动（构建所有 + 启动 API + 启动 Web）
+up = { depends-on = ["build-all", "serve-memory"] }

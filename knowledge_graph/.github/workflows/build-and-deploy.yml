@@ -61,6 +61,9 @@ jobs:
     - name: Build graph JSON
       run: pixi run build
     
+    - name: Export Wiki
+      run: pixi run export-wiki
+    
     - name: Build memory store
       run: pixi run build-memory
     
