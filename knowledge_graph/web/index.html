@@ -108,6 +108,112 @@
       background: var(--bg-tertiary);
     }
 
+    /* KB Selector */
+    .kb-selector {
+      position: relative;
+      margin-left: 16px;
+    }
+
+    .kb-selector-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .kb-selector-btn:hover {
+      background: var(--bg-hover);
+    }
+
+    .kb-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 8px;
+      min-width: 220px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      display: none;
+      z-index: 1001;
+      overflow: hidden;
+    }
+
+    .kb-dropdown.show {
+      display: block;
+    }
+
+    .kb-dropdown-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .kb-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .kb-dropdown-item:hover {
+      background: var(--bg-hover);
+    }
+
+    .kb-dropdown-item.active {
+      background: var(--bg-hover);
+      border-left-color: var(--accent-blue);
+    }
+
+    .kb-dropdown-item .kb-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .kb-dropdown-item .kb-info {
+      flex: 1;
+    }
+
+    .kb-dropdown-item .kb-name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .kb-dropdown-item .kb-count {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .kb-dropdown-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .kb-dropdown-footer a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-size: 13px;
+    }
+
     /* Hero Section */
     .hero {
       padding: 140px 40px 80px;
@@ -504,9 +610,27 @@
       <a href="editor/index.html" class="nav-link">
         <span><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></span> 编辑器
       </a>
+      <a href="kb_manager.html" class="nav-link">
+        <span><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z"/></svg></span> 知识库
+      </a>
       <a href="settings.html" class="nav-link">
         <span><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.16 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></span> 设置
       </a>
+    </div>
+    
+    <!-- KB Selector Dropdown -->
+    <div class="kb-selector">
+      <button class="kb-selector-btn" onclick="toggleKbDropdown()">
+        <span id="currentKbName">加载中...</span>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+      </button>
+      <div class="kb-dropdown" id="kbDropdown">
+        <div class="kb-dropdown-header">选择知识库</div>
+        <div id="kbDropdownList"></div>
+        <div class="kb-dropdown-footer">
+          <a href="kb_manager.html">管理知识库</a>
+        </div>
+      </div>
     </div>
   </nav>
 
@@ -653,6 +777,67 @@
   </div>
 
   <script>
+    // KB Selector functions
+    async function loadKbSelector() {
+      try {
+        const response = await fetch('/api/kb/list');
+        const data = await response.json();
+        
+        if (data.success) {
+          const current = data.current;
+          document.getElementById('currentKbName').textContent = current ? current.name : '未选择';
+          
+          // Render dropdown
+          const list = document.getElementById('kbDropdownList');
+          list.innerHTML = data.knowledge_bases.map(kb => `
+            <div class="kb-dropdown-item ${kb.id === current?.id ? 'active' : ''}" onclick="switchKb('${kb.id}')">
+              <div class="kb-icon" style="background: ${kb.color}20; color: ${kb.color}">${kb.icon}</div>
+              <div class="kb-info">
+                <div class="kb-name">${kb.name}</div>
+                <div class="kb-count">${kb.entity_count} 个实体</div>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        console.error('Failed to load KB list:', e);
+      }
+    }
+
+    function toggleKbDropdown() {
+      document.getElementById('kbDropdown').classList.toggle('show');
+    }
+
+    async function switchKb(id) {
+      try {
+        const response = await fetch('/api/kb/switch', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({id})
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          document.getElementById('currentKbName').textContent = data.knowledge_base.name;
+          document.getElementById('kbDropdown').classList.remove('show');
+          showToast(`已切换到: ${data.knowledge_base.name}`);
+          loadStats();
+        }
+      } catch (e) {
+        showToast('切换失败', 'error');
+      }
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.kb-selector')) {
+        document.getElementById('kbDropdown').classList.remove('show');
+      }
+    });
+
+    // Initialize
+    loadKbSelector();
+
     // Load stats
     async function loadStats() {
       try {

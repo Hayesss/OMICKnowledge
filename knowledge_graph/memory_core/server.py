@@ -20,6 +20,7 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
     
     store: MemoryStore = None
     embedder: Embedder = None
+    kb_manager = None  # Knowledge base manager
     
     def log_message(self, format, *args):
         """Suppress default logging."""
@@ -36,6 +37,13 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
     def _send_error(self, message, status=400):
         """Send error response."""
         self._send_json({'error': message}, status)
+    
+    def _get_kb_manager(self):
+        """Get or create knowledge base manager."""
+        if self.kb_manager is None:
+            from kb_manager import KnowledgeBaseManager
+            self.kb_manager = KnowledgeBaseManager()
+        return self.kb_manager
     
     def do_GET(self):
         """Handle GET requests."""
@@ -156,6 +164,35 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
                 'entity_types': entity_types,
                 'embedding_dim': self.store.embedding_dim
             })
+            return
+        
+        # Knowledge Base API
+        if path == '/api/kb/list':
+            try:
+                kb_manager = self._get_kb_manager()
+                kbs = kb_manager.list_kbs()
+                current = kb_manager.get_current_kb()
+                
+                self._send_json({
+                    'success': True,
+                    'knowledge_bases': [kb.to_dict() for kb in kbs],
+                    'current': current.to_dict() if current else None
+                })
+            except Exception as e:
+                self._send_error(f'Failed to list knowledge bases: {str(e)}')
+            return
+        
+        if path == '/api/kb/current':
+            try:
+                kb_manager = self._get_kb_manager()
+                current = kb_manager.get_current_kb()
+                
+                self._send_json({
+                    'success': True,
+                    'knowledge_base': current.to_dict() if current else None
+                })
+            except Exception as e:
+                self._send_error(f'Failed to get current knowledge base: {str(e)}')
             return
         
         # 404
@@ -358,6 +395,72 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 import traceback
                 self._send_error(f'PDF processing failed: {str(e)}\n{traceback.format_exc()}')
+            return
+        
+        # Knowledge Base API - Create
+        if path == '/api/kb/create':
+            try:
+                kb_manager = self._get_kb_manager()
+                kb = kb_manager.create_kb(
+                    kb_id=data.get('id'),
+                    name=data.get('name'),
+                    description=data.get('description', ''),
+                    color=data.get('color', '#3b82f6')
+                )
+                
+                self._send_json({
+                    'success': True,
+                    'knowledge_base': kb.to_dict()
+                })
+            except Exception as e:
+                self._send_error(f'Failed to create knowledge base: {str(e)}')
+            return
+        
+        # Knowledge Base API - Switch
+        if path == '/api/kb/switch':
+            try:
+                kb_id = data.get('id')
+                kb_manager = self._get_kb_manager()
+                kb_manager.set_current_kb(kb_id)
+                
+                # Reload store for new KB
+                kb = kb_manager.get_kb(kb_id)
+                memory_dir = kb_manager.get_kb_memory_dir(kb_id)
+                MemoryAPIHandler.store = MemoryStore.load(memory_dir)
+                
+                self._send_json({
+                    'success': True,
+                    'knowledge_base': kb.to_dict()
+                })
+            except Exception as e:
+                self._send_error(f'Failed to switch knowledge base: {str(e)}')
+            return
+        
+        self._send_error('Not found', 404)
+    
+    def do_DELETE(self):
+        """Handle DELETE requests."""
+        parsed = urlparse(self.path)
+        path = parsed.path
+        params = parse_qs(parsed.query)
+        
+        # Knowledge Base API - Delete
+        if path == '/api/kb/delete':
+            try:
+                kb_id = params.get('id', [''])[0]
+                if not kb_id:
+                    self._send_error('Missing parameter: id')
+                    return
+                
+                kb_manager = self._get_kb_manager()
+                success = kb_manager.delete_kb(kb_id)
+                
+                self._send_json({
+                    'success': success,
+                    'message': f'Knowledge base {kb_id} deleted' if success else 'Not found'
+                })
+            except Exception as e:
+                self._send_error(f'Failed to delete knowledge base: {str(e)}')
             return
         
         self._send_error('Not found', 404)
