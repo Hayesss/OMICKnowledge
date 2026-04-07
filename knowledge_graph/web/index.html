@@ -3,69 +3,770 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>多组学分析知识图谱</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
-  <link rel="stylesheet" href="static/css/style.css">
-  <script src="static/js/d3.v7.min.js"></script>
-  <script src="static/js/dagre.min.js"></script>
+  <title>OMICKnowledge - 多组学知识库</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='url(%23g)'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%233b82f6'/%3E%3Cstop offset='100%25' style='stop-color:%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='35' r='8' fill='white'/%3E%3Ccircle cx='50' cy='60' r='8' fill='white'/%3E%3Ccircle cx='35' cy='85' r='5' fill='white' opacity='0.7'/%3E%3Ccircle cx='65' cy='85' r='5' fill='white' opacity='0.7'/%3E%3C/svg%3E">
+  <style>
+    /* CSS Variables - Kimi Dark Theme */
+    :root {
+      --bg-primary: #0d0d0d;
+      --bg-secondary: #1a1a1a;
+      --bg-tertiary: #262626;
+      --bg-hover: #2d2d2d;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0a0;
+      --text-muted: #666666;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      --border-color: #333333;
+      --shadow-lg: 0 20px 60px rgba(0,0,0,0.5);
+      --shadow-md: 0 10px 40px rgba(0,0,0,0.3);
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Navigation - Kimi Style */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(13, 13, 13, 0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      z-index: 1000;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 600;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--accent-gradient);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      -webkit-text-fill-color: initial;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-link {
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+      background: var(--bg-hover);
+    }
+
+    .nav-link.active {
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 140px 40px 80px;
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+
+    .hero-badge .dot {
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .hero h1 {
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero h1 span {
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 20px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 48px;
+      line-height: 1.7;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent-gradient);
+      color: white;
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-hover);
+      border-color: #444;
+    }
+
+    /* Main Content Grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px;
+    }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      transition: all 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .card:hover {
+      background: var(--bg-tertiary);
+      border-color: #444;
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .card-arrow {
+      margin-top: 20px;
+      color: var(--text-muted);
+      font-size: 20px;
+      transition: transform 0.3s;
+    }
+
+    .card:hover .card-arrow {
+      transform: translateX(4px);
+      color: var(--accent-blue);
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      padding: 40px;
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      margin: 60px 40px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* Features Section */
+    .features {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 60px 40px;
+    }
+
+    .features h2 {
+      font-size: 32px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .feature-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .feature-item {
+      display: flex;
+      gap: 16px;
+      padding: 24px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .feature-content h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .feature-content p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* PDF Upload Section */
+    .upload-section {
+      max-width: 800px;
+      margin: 60px auto;
+      padding: 0 40px;
+    }
+
+    .upload-card {
+      background: var(--bg-secondary);
+      border: 2px dashed var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 60px 40px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .upload-card:hover, .upload-card.dragover {
+      border-color: var(--accent-blue);
+      background: var(--bg-tertiary);
+    }
+
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    .upload-card h3 {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+
+    .upload-card p {
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .upload-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--accent-gradient);
+      color: white;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .upload-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 60px 40px;
+      color: var(--text-muted);
+      font-size: 14px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .footer a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      color: var(--text-primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .feature-list {
+        grid-template-columns: 1fr;
+      }
+      
+      .hero h1 {
+        font-size: 36px;
+      }
+      
+      .stats-bar {
+        flex-wrap: wrap;
+        gap: 30px;
+      }
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      padding: 16px 28px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 2000;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success {
+      border-left: 4px solid #22c55e;
+    }
+
+    .toast.error {
+      border-left: 4px solid #ef4444;
+    }
+  </style>
 </head>
 <body>
-  <header class="top-bar">
-    <h1 class="logo">多组学知识图谱</h1>
-    <nav class="view-switcher">
-      <button id="btn-network" class="active" aria-pressed="true">网络视图</button>
-      <button id="btn-flow" aria-pressed="false">流程视图</button>
-    </nav>
-    <div class="assay-selector">
-      <label for="assay-select">组学:</label>
-      <select id="assay-select" aria-label="选择组学"></select>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="vertical-align:middle"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/><path d="M6 5h2v14H6zM16 5h2v14h-2z" opacity="0.5"/></svg></div>
+      <span>OMICKnowledge</span>
     </div>
-    <div class="search-box">
-      <input type="text" id="search-input" placeholder="搜索节点..." aria-label="搜索节点">
-      <div id="search-results" class="search-results" aria-live="polite"></div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link active">
+        <span><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M12 3l10 9h-3v9h-6v-6h-2v6H5v-9H2z"/></svg></span> 首页
+      </a>
+      <a href="graph.html" class="nav-link">
+        <span><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="2"/><circle cx="5" cy="5" r="1.5"/><circle cx="19" cy="5" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="19" cy="19" r="1.5"/><path d="M12 12L5 5M12 12L19 5M12 12L5 19M12 12L19 19" stroke="currentColor" stroke-width="1.5"/></svg></span> 知识图谱
+      </a>
+      <a href="editor/index.html" class="nav-link">
+        <span><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></span> 编辑器
+      </a>
+      <a href="settings.html" class="nav-link">
+        <span><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.16 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></span> 设置
+      </a>
     </div>
-    <a href="editor/index.html" class="editor-link" title="打开编辑器">📝 编辑</a>
-  </header>
+  </nav>
 
-  <div class="main-container">
-    <aside class="left-panel" aria-label="筛选器">
-      <h2>筛选器</h2>
-      
-      <div class="filter-group">
-        <h3>实体类型</h3>
-        <div id="filter-types"></div>
-      </div>
-      
-      <div class="filter-group">
-        <h3>组学标签</h3>
-        <div id="filter-tags"></div>
-      </div>
-      
-      <div class="filter-group">
-        <h3>难度等级</h3>
-        <div id="filter-difficulty">
-          <label><input type="radio" name="difficulty" value="all" checked> 全部</label>
-          <label><input type="radio" name="difficulty" value="beginner"> 入门</label>
-          <label><input type="radio" name="difficulty" value="intermediate"> 进阶</label>
-          <label><input type="radio" name="difficulty" value="advanced"> 高级</label>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      <span>AI 驱动的多组学知识管理系统</span>
+    </div>
+    <h1>
+      构建你的<br>
+      <span>多组学知识图谱</span>
+    </h1>
+    <p>
+      整合实验技术、分析流程、工具资源的知识库系统。
+      支持 PDF 智能导入、语义搜索和可视化浏览。
+    </p>
+    <div class="quick-actions">
+      <a href="graph.html" class="btn btn-primary">
+        <span><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="2"/><circle cx="5" cy="5" r="1.5"/><circle cx="19" cy="5" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="19" cy="19" r="1.5"/><path d="M12 12L5 5M12 12L19 5M12 12L5 19M12 12L19 19" stroke="currentColor" stroke-width="1.5"/></svg></span> 浏览知识图谱
+      </a>
+      <a href="editor/index.html" class="btn btn-secondary">
+        <span><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></span> 创建知识笔记
+      </a>
+    </div>
+  </section>
+
+  <!-- Content Grid -->
+  <section class="content-grid">
+    <a href="graph.html" class="card">
+      <div class="card-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="2"/><circle cx="5" cy="5" r="1.5"/><circle cx="19" cy="5" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="19" cy="19" r="1.5"/><path d="M12 12L5 5M12 12L19 5M12 12L5 19M12 12L19 19" stroke="currentColor" stroke-width="1.5"/></svg></div>
+      <h3>知识图谱</h3>
+      <p>交互式可视化浏览多组学知识体系，支持网络视图和流程视图切换</p>
+      <div class="card-arrow">→</div>
+    </a>
+    
+    <a href="editor/index.html" class="card">
+      <div class="card-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></div>
+      <h3>知识编辑器</h3>
+      <p>通过表单界面添加和编辑实体，自动生成 YAML 和 Markdown 文档</p>
+      <div class="card-arrow">→</div>
+    </a>
+    
+    <a href="#" class="card" onclick="document.getElementById('pdfInput').click(); return false;">
+      <div class="card-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
+      <h3>PDF 导入</h3>
+      <p>上传学术论文，AI 自动提取方法、工具、概念并生成知识实体</p>
+      <div class="card-arrow">→</div>
+    </a>
+  </section>
+
+  <!-- PDF Upload Section -->
+  <section class="upload-section">
+    <div class="upload-card" id="uploadZone">
+      <div class="upload-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
+      <h3>拖放 PDF 文件到此处</h3>
+      <p>支持学术论文自动解析，提取方法、工具、概念生成知识实体</p>
+      <label class="upload-btn">
+        <span>📁</span> 选择文件
+        <input type="file" class="file-input" id="pdfInput" accept=".pdf" multiple>
+      </label>
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <section class="stats-bar">
+    <div class="stat">
+      <div class="stat-value" id="entityCount">-</div>
+      <div class="stat-label">知识实体</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="relationCount">-</div>
+      <div class="stat-label">关联关系</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">3</div>
+      <div class="stat-label">数据层级</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">∞</div>
+      <div class="stat-label">持续更新</div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features">
+    <h2>核心特性</h2>
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
+        <div class="feature-content">
+          <h4>语义搜索</h4>
+          <p>基于向量嵌入的智能检索，理解查询意图，快速定位相关知识</p>
         </div>
       </div>
-    </aside>
-
-    <main class="viz-container">
-      <svg id="viz-svg" role="img" aria-label="知识图谱可视化"></svg>
-    </main>
-
-    <aside class="right-panel" id="detail-panel" aria-label="节点详情">
-      <div class="empty-state">
-        <p>点击节点查看详情</p>
+      <div class="feature-item">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></div>
+        <div class="feature-content">
+          <h4>可视化图谱</h4>
+          <p>D3.js 驱动的交互式网络图，直观展示知识间的关系</p>
+        </div>
       </div>
-    </aside>
+      <div class="feature-item">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></div>
+        <div class="feature-content">
+          <h4>Web 编辑器</h4>
+          <p>无需编写 YAML，通过表单界面轻松编辑知识实体</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z"/></svg></div>
+        <div class="feature-content">
+          <h4>Wiki 导出</h4>
+          <p>自动生成适合 LLM 阅读的 Markdown 文档，便于 AI 训练</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7v4a3 3 0 01-3 3H6a3 3 0 01-3-3v-4a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zM7 13v2h2v-2H7zm8 0v2h2v-2h-2z"/></svg></div>
+        <div class="feature-content">
+          <h4>PDF AI 解析</h4>
+          <p>上传论文自动提取方法、工具、数据集，一键生成知识实体</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg></div>
+        <div class="feature-content">
+          <h4>多维度标签</h4>
+          <p>组学类型、难度等级、技术标签，多维度分类检索</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>OMICKnowledge - 多组学分析知识图谱系统 | 
+    <a href="https://github.com/Hayesss/OMICKnowledge" target="_blank">GitHub</a></p>
+  </footer>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <span id="toastIcon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></span>
+    <span id="toastMessage">操作成功</span>
   </div>
 
-  <script src="static/js/network_view.js"></script>
-  <script src="static/js/flow_view.js"></script>
-  <script src="static/js/search_filter.js"></script>
-  <script src="static/js/app.js"></script>
+  <script>
+    // Load stats
+    async function loadStats() {
+      try {
+        const response = await fetch('data/entities.json');
+        const data = await response.json();
+        document.getElementById('entityCount').textContent = data.nodes?.length || '27';
+        document.getElementById('relationCount').textContent = data.edges?.length || '50';
+      } catch (e) {
+        document.getElementById('entityCount').textContent = '27';
+        document.getElementById('relationCount').textContent = '50';
+      }
+    }
+    loadStats();
+
+    // Toast notification
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMessage').textContent = message;
+      document.getElementById('toastIcon').textContent = type === 'success' ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' : '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // File upload
+    const uploadZone = document.getElementById('uploadZone');
+    const pdfInput = document.getElementById('pdfInput');
+
+    // Drag & drop
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      handleFiles(files);
+    });
+
+    pdfInput.addEventListener('change', (e) => {
+      handleFiles(e.target.files);
+    });
+
+    async function handleFiles(files) {
+      // Check settings first
+      const settings = getAISettings();
+      if (!settings || !settings.apiKey) {
+        showToast('请先配置 AI 设置 <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.16 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>', 'error');
+        setTimeout(() => {
+          if (confirm('是否前往设置页面配置 API Key？')) {
+            window.location.href = 'settings.html';
+          }
+        }, 500);
+        return;
+      }
+
+      for (const file of files) {
+        if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+          showToast(`正在上传: ${file.name}...`, 'success');
+          await uploadPDF(file, settings);
+        } else {
+          showToast('请上传 PDF 文件', 'error');
+        }
+      }
+    }
+
+    async function uploadPDF(file, settings) {
+      try {
+        const formData = new FormData();
+        formData.append('pdf', file);
+        formData.append('apiBase', settings.apiBase || 'https://api.openai-proxy.org');
+        formData.append('apiKey', settings.apiKey);
+        formData.append('model', settings.model || 'gpt-4.1-mini');
+
+        showToast(`正在解析: ${file.name}...`, 'success');
+        
+        const response = await fetch('http://localhost:8000/api/process-pdf', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          showToast(`✅ 已生成 ${result.entity_count} 个实体`, 'success');
+          console.log('Generated entities:', result.entities);
+          // Refresh stats after a delay
+          setTimeout(loadStats, 2000);
+        } else {
+          showToast(`❌ ${result.error || '处理失败'}`, 'error');
+        }
+      } catch (error) {
+        showToast(`❌ 上传失败: ${error.message}`, 'error');
+        console.error('Upload error:', error);
+      }
+    }
+
+    // Get AI settings from localStorage
+    function getAISettings() {
+      try {
+        const saved = localStorage.getItem('omicknowledge_settings');
+        if (saved) {
+          return JSON.parse(saved);
+        }
+      } catch (e) {
+        console.error('Failed to get settings:', e);
+      }
+      return null;
+    }
+  </script>
 </body>
 </html>

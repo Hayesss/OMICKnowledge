@@ -39,6 +39,30 @@ body {
   color: var(--color-primary);
 }
 
+.main-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-link {
+  padding: 6px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  color: #6b7280;
+  transition: all 0.2s;
+}
+
+.nav-link:hover {
+  background: #f3f4f6;
+  color: var(--color-primary);
+}
+
+.nav-link.active {
+  background: var(--color-primary);
+  color: white;
+}
+
 .view-switcher {
   display: flex;
   gap: 8px;

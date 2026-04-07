@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>设置 - OMICKnowledge</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='url(%23g)'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%233b82f6'/%3E%3Cstop offset='100%25' style='stop-color:%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='35' r='8' fill='white'/%3E%3Ccircle cx='50' cy='60' r='8' fill='white'/%3E%3Ccircle cx='35' cy='85' r='5' fill='white' opacity='0.7'/%3E%3Ccircle cx='65' cy='85' r='5' fill='white' opacity='0.7'/%3E%3C/svg%3E"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="vertical-align:middle"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/><path d="M6 5h2v14H6zM16 5h2v14h-2z" opacity="0.5"/></svg></text></svg>">
+  <style>
+    /* CSS Variables - Kimi Dark Theme */
+    :root {
+      --bg-primary: #0d0d0d;
+      --bg-secondary: #1a1a1a;
+      --bg-tertiary: #262626;
+      --bg-hover: #2d2d2d;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0a0;
+      --text-muted: #666666;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      --border-color: #333333;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --error: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* Navigation */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(13, 13, 13, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      z-index: 1000;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent-gradient);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-link {
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+      background: var(--bg-hover);
+    }
+
+    .nav-link.active {
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+    }
+
+    /* Main Content */
+    .main-container {
+      padding-top: 64px;
+      max-width: 800px;
+      margin: 0 auto;
+      padding-left: 40px;
+      padding-right: 40px;
+    }
+
+    .page-header {
+      padding: 48px 0 32px;
+    }
+
+    .page-header h1 {
+      font-size: 32px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      color: var(--text-secondary);
+    }
+
+    /* Settings Card */
+    .settings-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .settings-card h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .settings-card .subtitle {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .form-group label .required {
+      color: var(--error);
+      margin-left: 4px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-group input::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* API Key Input with Toggle */
+    .api-key-input {
+      position: relative;
+    }
+
+    .api-key-input input {
+      padding-right: 100px;
+      font-family: 'Monaco', 'Consolas', monospace;
+    }
+
+    .toggle-visibility {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--bg-hover);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .toggle-visibility:hover {
+      background: var(--accent-blue);
+      color: white;
+      border-color: var(--accent-blue);
+    }
+
+    .help-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    /* Status Indicator */
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-indicator.connected {
+      background: rgba(34, 197, 94, 0.1);
+      color: var(--success);
+    }
+
+    .status-indicator.disconnected {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--error);
+    }
+
+    .status-indicator.pending {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .status-indicator.connected .status-dot {
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    .status-indicator.disconnected .status-dot {
+      background: var(--error);
+    }
+
+    .status-indicator.pending .status-dot {
+      background: var(--warning);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Buttons */
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-gradient);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-hover);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--error);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    /* Info Box */
+    .info-box {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .info-box h4 {
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: var(--accent-blue);
+    }
+
+    .info-box p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .info-box code {
+      background: var(--bg-tertiary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 12px;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      top: 80px;
+      right: 40px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      padding: 16px 24px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transform: translateX(400px);
+      transition: transform 0.3s;
+      z-index: 2000;
+    }
+
+    .toast.show {
+      transform: translateX(0);
+    }
+
+    .toast.success {
+      border-left: 4px solid var(--success);
+    }
+
+    .toast.error {
+      border-left: 4px solid var(--error);
+    }
+
+    /* Test Result */
+    .test-result {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      display: none;
+    }
+
+    .test-result.show {
+      display: block;
+    }
+
+    .test-result.success {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: var(--success);
+    }
+
+    .test-result.error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--error);
+    }
+
+    /* Preset Buttons */
+    .preset-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .preset-btn {
+      padding: 6px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .preset-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border-color: var(--accent-blue);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .main-container {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+      
+      .settings-card {
+        padding: 24px;
+      }
+      
+      .button-group {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" style="vertical-align:middle"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/><path d="M6 5h2v14H6zM16 5h2v14h-2z" opacity="0.5"/></svg></div>
+      <span>OMICKnowledge</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M12 3l10 9h-3v9h-6v-6h-2v6H5v-9H2z"/></svg> 首页</a>
+      <a href="graph.html" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="2"/><circle cx="5" cy="5" r="1.5"/><circle cx="19" cy="5" r="1.5"/><circle cx="5" cy="19" r="1.5"/><circle cx="19" cy="19" r="1.5"/><path d="M12 12L5 5M12 12L19 5M12 12L5 19M12 12L19 19" stroke="currentColor" stroke-width="1.5"/></svg> 图谱</a>
+      <a href="editor/index.html" class="nav-link"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg> 编辑器</a>
+      <a href="settings.html" class="nav-link active"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.16 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg> 设置</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-container">
+    <div class="page-header">
+      <h1><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L3.16 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg> 设置</h1>
+      <p>配置 AI 服务参数，用于 PDF 智能解析</p>
+    </div>
+
+    <!-- AI Configuration -->
+    <div class="settings-card">
+      <h2><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7v4a3 3 0 01-3 3H6a3 3 0 01-3-3v-4a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zM7 13v2h2v-2H7zm8 0v2h2v-2h-2z"/></svg> AI 服务配置</h2>
+      <p class="subtitle">配置 OpenAI 兼容的 API，用于 PDF 论文解析</p>
+
+      <div class="info-box">
+        <h4><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg> 提示</h4>
+        <p>支持任何 OpenAI 兼容的 API 服务，包括：<br>
+        • OpenAI 官方 API (<code>https://api.openai.com</code>)<br>
+        • Azure OpenAI (<code>https://your-resource.openai.azure.com</code>)<br>
+        • 第三方代理服务 (<code>https://api.openai-proxy.org</code>)</p>
+      </div>
+
+      <form id="settingsForm">
+        <!-- API Base URL -->
+        <div class="form-group">
+          <label for="apiBase">API 基础地址</label>
+          <input type="text" id="apiBase" placeholder="https://api.openai-proxy.org" 
+                 value="https://api.openai-proxy.org">
+          <p class="help-text">OpenAI 兼容 API 的基础 URL，不需要 /v1 后缀</p>
+          
+          <div class="preset-buttons">
+            <button type="button" class="preset-btn" onclick="setPreset('openai')">OpenAI 官方</button>
+            <button type="button" class="preset-btn" onclick="setPreset('proxy')">代理服务</button>
+            <button type="button" class="preset-btn" onclick="setPreset('local')">本地服务</button>
+          </div>
+        </div>
+
+        <!-- API Key -->
+        <div class="form-group">
+          <label for="apiKey">API Key <span class="required">*</span></label>
+          <div class="api-key-input">
+            <input type="password" id="apiKey" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx">
+            <button type="button" class="toggle-visibility" onclick="toggleApiKeyVisibility()">显示</button>
+          </div>
+          <p class="help-text">您的 API 密钥将被安全地存储在浏览器本地存储中</p>
+        </div>
+
+        <!-- Model -->
+        <div class="form-group">
+          <label for="model">模型</label>
+          <input type="text" id="model" placeholder="gpt-4.1-mini" value="gpt-4.1-mini">
+          <p class="help-text">推荐用于 PDF 解析的模型：gpt-4.1-mini, gpt-4o-mini, gpt-4o</p>
+        </div>
+
+        <!-- Connection Status -->
+        <div class="form-group">
+          <label>连接状态</label>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span id="connectionStatus" class="status-indicator pending">
+              <span class="status-dot"></span>
+              <span>未测试</span>
+            </span>
+            <button type="button" class="btn btn-secondary" onclick="testConnection()" style="padding: 8px 16px; font-size: 13px;">
+              测试连接
+            </button>
+          </div>
+        </div>
+
+        <!-- Test Result -->
+        <div id="testResult" class="test-result"></div>
+
+        <!-- Buttons -->
+        <div class="button-group">
+          <button type="submit" class="btn btn-primary">
+            保存设置
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="resetSettings()">
+            重置
+          </button>
+          <button type="button" class="btn btn-danger" onclick="clearSettings()">
+            清除所有设置
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- About Storage -->
+    <div class="settings-card">
+      <h2>🔒 隐私说明</h2>
+      <p class="subtitle">您的数据如何被存储和使用</p>
+      
+      <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+        <p style="margin-bottom: 12px;"><strong>本地存储：</strong>所有设置仅保存在您的浏览器本地存储 (localStorage) 中，不会上传到任何服务器。</p>
+        <p style="margin-bottom: 12px;"><strong>API 调用：</strong>PDF 解析时，API Key 仅用于直接调用您配置的 AI 服务，不会经过我们的服务器。</p>
+        <p><strong>安全建议：</strong>建议使用具有适当限额的 API Key，并定期更换密钥。</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <span id="toastIcon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></span>
+    <span id="toastMessage">操作成功</span>
+  </div>
+
+  <script>
+    // Constants
+    const STORAGE_KEY = 'omicknowledge_settings';
+    
+    // Preset configurations
+    const PRESETS = {
+      openai: {
+        apiBase: 'https://api.openai.com',
+        model: 'gpt-4o-mini'
+      },
+      proxy: {
+        apiBase: 'https://api.openai-proxy.org',
+        model: 'gpt-4.1-mini'
+      },
+      local: {
+        apiBase: 'http://localhost:8000',
+        model: 'gpt-4'
+      }
+    };
+
+    // Load settings on page load
+    document.addEventListener('DOMContentLoaded', loadSettings);
+
+    // Form submit handler
+    document.getElementById('settingsForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      saveSettings();
+    });
+
+    function loadSettings() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const settings = JSON.parse(saved);
+          document.getElementById('apiBase').value = settings.apiBase || '';
+          document.getElementById('apiKey').value = settings.apiKey || '';
+          document.getElementById('model').value = settings.model || '';
+          
+          // Update status
+          if (settings.apiKey) {
+            updateStatus('connected', '已配置');
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load settings:', e);
+      }
+    }
+
+    function saveSettings() {
+      const settings = {
+        apiBase: document.getElementById('apiBase').value.trim(),
+        apiKey: document.getElementById('apiKey').value.trim(),
+        model: document.getElementById('model').value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+
+      if (!settings.apiKey) {
+        showToast('请输入 API Key', 'error');
+        return;
+      }
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+        showToast('设置已保存', 'success');
+        updateStatus('connected', '已配置');
+      } catch (e) {
+        showToast('保存失败: ' + e.message, 'error');
+      }
+    }
+
+    function resetSettings() {
+      loadSettings();
+      showToast('已重置为上次保存的设置', 'success');
+    }
+
+    function clearSettings() {
+      if (confirm('确定要清除所有设置吗？这将删除存储的 API Key。')) {
+        localStorage.removeItem(STORAGE_KEY);
+        document.getElementById('apiBase').value = 'https://api.openai-proxy.org';
+        document.getElementById('apiKey').value = '';
+        document.getElementById('model').value = 'gpt-4.1-mini';
+        updateStatus('disconnected', '未配置');
+        showToast('设置已清除', 'success');
+      }
+    }
+
+    function setPreset(name) {
+      const preset = PRESETS[name];
+      if (preset) {
+        document.getElementById('apiBase').value = preset.apiBase;
+        document.getElementById('model').value = preset.model;
+        showToast(`已加载预设: ${name}`, 'success');
+      }
+    }
+
+    function toggleApiKeyVisibility() {
+      const input = document.getElementById('apiKey');
+      const btn = document.querySelector('.toggle-visibility');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '隐藏';
+      } else {
+        input.type = 'password';
+        btn.textContent = '显示';
+      }
+    }
+
+    async function testConnection() {
+      const apiBase = document.getElementById('apiBase').value.trim();
+      const apiKey = document.getElementById('apiKey').value.trim();
+      const resultDiv = document.getElementById('testResult');
+      
+      if (!apiKey) {
+        showResult('error', '请先输入 API Key');
+        return;
+      }
+
+      updateStatus('pending', '测试中...');
+      showResult('pending', '正在测试连接...');
+
+      try {
+        const response = await fetch(`${apiBase}/v1/models`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const modelCount = data.data ? data.data.length : 0;
+          updateStatus('connected', '连接正常');
+          showResult('success', `✅ 连接成功！发现 ${modelCount} 个可用模型。`);
+        } else {
+          const error = await response.text();
+          updateStatus('disconnected', '连接失败');
+          showResult('error', `❌ 连接失败: HTTP ${response.status}\n${error}`);
+        }
+      } catch (error) {
+        updateStatus('disconnected', '连接失败');
+        showResult('error', `❌ 连接失败: ${error.message}`);
+      }
+    }
+
+    function updateStatus(status, text) {
+      const indicator = document.getElementById('connectionStatus');
+      indicator.className = `status-indicator ${status}`;
+      indicator.querySelector('span:last-child').textContent = text;
+    }
+
+    function showResult(type, message) {
+      const resultDiv = document.getElementById('testResult');
+      resultDiv.className = `test-result show ${type}`;
+      resultDiv.textContent = message;
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMessage').textContent = message;
+      document.getElementById('toastIcon').textContent = type === 'success' ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' : '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Global function to get settings (used by other pages)
+    window.getAISettings = function() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          return JSON.parse(saved);
+        }
+      } catch (e) {
+        console.error('Failed to get settings:', e);
+      }
+      return null;
+    };
+  </script>
+</body>
+</html>

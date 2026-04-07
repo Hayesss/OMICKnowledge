@@ -276,6 +276,90 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
                 self._send_error(f'Rebuild failed: {str(e)}')
             return
         
+        # Process PDF and extract entities
+        if path == '/api/process-pdf':
+            try:
+                import cgi
+                import tempfile
+                import os
+                
+                # Parse multipart form data
+                content_type = self.headers.get('Content-Type', '')
+                if 'multipart/form-data' not in content_type:
+                    self._send_error('Expected multipart/form-data')
+                    return
+                
+                # Create form parser
+                environ = {
+                    'REQUEST_METHOD': 'POST',
+                    'CONTENT_TYPE': content_type,
+                    'CONTENT_LENGTH': str(content_length)
+                }
+                
+                form = cgi.FieldStorage(
+                    fp=self.rfile,
+                    headers=self.headers,
+                    environ=environ
+                )
+                
+                # Get uploaded PDF
+                if 'pdf' not in form:
+                    self._send_error('No PDF file provided')
+                    return
+                
+                pdf_field = form['pdf']
+                if not pdf_field.filename:
+                    self._send_error('Empty PDF file')
+                    return
+                
+                # Get API settings from form
+                api_base = form.getvalue('apiBase', 'https://api.openai-proxy.org')
+                api_key = form.getvalue('apiKey', '')
+                model = form.getvalue('model', 'gpt-4.1-mini')
+                
+                if not api_key:
+                    self._send_error('API Key is required')
+                    return
+                
+                # Save PDF to temp file
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
+                    tmp.write(pdf_field.file.read())
+                    tmp_path = tmp.name
+                
+                try:
+                    # Import and run PDF processor
+                    sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+                    from pdf_processor import PDFProcessor
+                    
+                    processor = PDFProcessor(
+                        api_base=api_base,
+                        api_key=api_key,
+                        model=model
+                    )
+                    
+                    result = processor.process_pdf(tmp_path, extract_figures=False)
+                    
+                    # Save entities to content directory
+                    processor.save_entities_to_yaml(result)
+                    
+                    self._send_json({
+                        'success': True,
+                        'message': f'PDF processed successfully',
+                        'filename': result['filename'],
+                        'entity_count': result['entity_count'],
+                        'entities': [e['id'] for e in result['entities']]
+                    })
+                    
+                finally:
+                    # Clean up temp file
+                    if os.path.exists(tmp_path):
+                        os.unlink(tmp_path)
+                        
+            except Exception as e:
+                import traceback
+                self._send_error(f'PDF processing failed: {str(e)}\n{traceback.format_exc()}')
+            return
+        
         self._send_error('Not found', 404)
     
     def do_OPTIONS(self):
