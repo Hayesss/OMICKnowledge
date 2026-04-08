@@ -205,6 +205,13 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
         
         # Read body
         content_length = int(self.headers.get('Content-Length', 0))
+        
+        # Process PDF - handle multipart/form-data (must be before JSON parsing)
+        if path == '/api/process-pdf':
+            self._handle_process_pdf(content_length)
+            return
+        
+        # For other endpoints, parse JSON body
         body = self.rfile.read(content_length).decode('utf-8')
         
         try:
@@ -313,97 +320,6 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
                 self._send_error(f'Rebuild failed: {str(e)}')
             return
         
-        # Process PDF and extract entities
-        if path == '/api/process-pdf':
-            try:
-                import cgi
-                import tempfile
-                import os
-                
-                # Parse multipart form data
-                content_type = self.headers.get('Content-Type', '')
-                if 'multipart/form-data' not in content_type:
-                    self._send_error('Expected multipart/form-data')
-                    return
-                
-                # Create form parser
-                environ = {
-                    'REQUEST_METHOD': 'POST',
-                    'CONTENT_TYPE': content_type,
-                    'CONTENT_LENGTH': str(content_length)
-                }
-                
-                form = cgi.FieldStorage(
-                    fp=self.rfile,
-                    headers=self.headers,
-                    environ=environ
-                )
-                
-                # Get uploaded PDF
-                if 'pdf' not in form:
-                    self._send_error('No PDF file provided')
-                    return
-                
-                pdf_field = form['pdf']
-                if not pdf_field.filename:
-                    self._send_error('Empty PDF file')
-                    return
-                
-                # Get API settings from form
-                api_base = form.getvalue('apiBase', 'https://api.openai-proxy.org')
-                api_key = form.getvalue('apiKey', '')
-                model = form.getvalue('model', 'gpt-4.1-mini')
-                
-                if not api_key:
-                    self._send_error('API Key is required')
-                    return
-                
-                # Save PDF to temp file
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
-                    tmp.write(pdf_field.file.read())
-                    tmp_path = tmp.name
-                
-                try:
-                    # Import and run PDF processor
-                    sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
-                    from pdf_processor import PDFProcessor
-                    
-                    processor = PDFProcessor(
-                        api_base=api_base,
-                        api_key=api_key,
-                        model=model
-                    )
-                    
-                    result = processor.process_pdf(tmp_path, extract_figures=False)
-                    
-                    # Save entities to current KB's content directory
-                    kb_manager = self._get_kb_manager()
-                    current_kb = kb_manager.get_current_kb()
-                    if current_kb:
-                        output_dir = kb_manager.get_kb_content_dir(current_kb.id)
-                    else:
-                        output_dir = Path('content')
-                    
-                    processor.save_entities_to_yaml(result, str(output_dir))
-                    
-                    self._send_json({
-                        'success': True,
-                        'message': f'PDF processed successfully',
-                        'filename': result['filename'],
-                        'entity_count': result['entity_count'],
-                        'entities': [e['id'] for e in result['entities']]
-                    })
-                    
-                finally:
-                    # Clean up temp file
-                    if os.path.exists(tmp_path):
-                        os.unlink(tmp_path)
-                        
-            except Exception as e:
-                import traceback
-                self._send_error(f'PDF processing failed: {str(e)}\n{traceback.format_exc()}')
-            return
-        
         # Knowledge Base API - Create
         if path == '/api/kb/create':
             try:
@@ -479,6 +395,149 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
+    
+    def _handle_process_pdf(self, content_length: int):
+        """Handle PDF upload and processing."""
+        try:
+            import tempfile
+            import os
+            from multipart import MultipartParser
+            
+            # Parse multipart form data
+            content_type = self.headers.get('Content-Type', '')
+            if 'multipart/form-data' not in content_type:
+                self._send_error('Expected multipart/form-data')
+                return
+            
+            # Extract boundary
+            boundary = None
+            for part in content_type.split(';'):
+                part = part.strip()
+                if part.startswith('boundary='):
+                    boundary = part[9:].strip('"')
+                    break
+            
+            if not boundary:
+                self._send_error('No boundary in Content-Type')
+                return
+            
+            # Read raw body
+            body = self.rfile.read(content_length)
+            
+            # Parse multipart using python-multipart
+            from io import BytesIO
+            from multipart.multipart import parse_options_header
+            
+            # Simple multipart parser
+            parts = self._parse_multipart(body, boundary)
+            
+            # Get uploaded PDF
+            if 'pdf' not in parts:
+                self._send_error('No PDF file provided')
+                return
+            
+            pdf_data = parts['pdf']['data']
+            if not pdf_data:
+                self._send_error('Empty PDF file')
+                return
+            
+            # Get API settings from form
+            api_base = parts.get('apiBase', {}).get('data', b'https://api.openai-proxy.org').decode('utf-8')
+            api_key = parts.get('apiKey', {}).get('data', b'').decode('utf-8')
+            model = parts.get('model', {}).get('data', b'gpt-4.1-mini').decode('utf-8')
+            
+            if not api_key:
+                self._send_error('API Key is required')
+                return
+            
+            # Save PDF to temp file
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp:
+                tmp.write(pdf_data)
+                tmp_path = tmp.name
+            
+            try:
+                # Import and run PDF processor
+                sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+                from pdf_processor import PDFProcessor
+                
+                processor = PDFProcessor(
+                    api_base=api_base,
+                    api_key=api_key,
+                    model=model
+                )
+                
+                result = processor.process_pdf(tmp_path, extract_figures=False)
+                
+                # Save entities to current KB's content directory
+                kb_manager = self._get_kb_manager()
+                current_kb = kb_manager.get_current_kb()
+                if current_kb:
+                    output_dir = kb_manager.get_kb_content_dir(current_kb.id)
+                else:
+                    output_dir = Path('content')
+                
+                processor.save_entities_to_yaml(result, str(output_dir))
+                
+                self._send_json({
+                    'success': True,
+                    'message': f'PDF processed successfully',
+                    'filename': result['filename'],
+                    'entity_count': result['entity_count'],
+                    'entities': [e['id'] for e in result['entities']]
+                })
+                
+            finally:
+                # Clean up temp file
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+                    
+        except Exception as e:
+            import traceback
+            self._send_error(f'PDF processing failed: {str(e)}\n{traceback.format_exc()}')
+    
+    def _parse_multipart(self, body: bytes, boundary: str) -> dict:
+        """Simple multipart/form-data parser."""
+        parts = {}
+        boundary_bytes = ('--' + boundary).encode('utf-8')
+        
+        # Split by boundary
+        sections = body.split(boundary_bytes)
+        
+        for section in sections:
+            section = section.strip()
+            if not section or section == b'--':
+                continue
+            
+            # Parse headers and data
+            if b'\r\n\r\n' in section:
+                header_part, data = section.split(b'\r\n\r\n', 1)
+                data = data.rstrip(b'\r\n')
+                
+                # Parse Content-Disposition header
+                headers = header_part.decode('utf-8', errors='replace')
+                name = None
+                filename = None
+                
+                for line in headers.split('\r\n'):
+                    if line.lower().startswith('content-disposition:'):
+                        # Extract name
+                        if 'name="' in line:
+                            start = line.index('name="') + 6
+                            end = line.index('"', start)
+                            name = line[start:end]
+                        # Extract filename
+                        if 'filename="' in line:
+                            start = line.index('filename="') + 10
+                            end = line.index('"', start)
+                            filename = line[start:end]
+                
+                if name:
+                    parts[name] = {
+                        'data': data,
+                        'filename': filename
+                    }
+        
+        return parts
 
 
 def run_server(store_dir: Path, port: int = 8000, model_name: str = "all-MiniLM-L6-v2"):
