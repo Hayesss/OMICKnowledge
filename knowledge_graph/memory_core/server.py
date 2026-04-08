@@ -478,12 +478,16 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
                 
                 processor.save_entities_to_yaml(result, str(output_dir))
                 
+                # Auto-build: export wiki and rebuild memory store
+                build_result = self._auto_build_kb(kb_manager, current_kb)
+                
                 self._send_json({
                     'success': True,
                     'message': f'PDF processed successfully',
                     'filename': result['filename'],
                     'entity_count': result['entity_count'],
-                    'entities': [e['id'] for e in result['entities']]
+                    'entities': [e['id'] for e in result['entities']],
+                    'build': build_result
                 })
                 
             finally:
@@ -494,6 +498,59 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
         except Exception as e:
             import traceback
             self._send_error(f'PDF processing failed: {str(e)}\n{traceback.format_exc()}')
+    
+    def _auto_build_kb(self, kb_manager, current_kb) -> dict:
+        """Auto-build wiki and memory store for current KB."""
+        import subprocess
+        import threading
+        
+        result = {'status': 'pending', 'wiki': None, 'memory': None}
+        
+        if not current_kb:
+            return {**result, 'status': 'skipped', 'error': 'No current KB'}
+        
+        kb_id = current_kb.id
+        kb_dir = kb_manager.get_kb_dir(kb_id)
+        
+        def run_build():
+            try:
+                # Run export-wiki
+                wiki_result = subprocess.run(
+                    ['pixi', 'run', 'python', '-m', 'scripts.yaml_to_wiki', str(kb_dir / 'content'), str(kb_dir / 'wiki')],
+                    cwd=Path(__file__).parent.parent,
+                    capture_output=True,
+                    text=True,
+                    timeout=60
+                )
+                result['wiki'] = {'success': wiki_result.returncode == 0, 'output': wiki_result.stdout[-500:] if wiki_result.stdout else ''}
+                
+                # Run build-memory
+                memory_result = subprocess.run(
+                    ['pixi', 'run', 'python', '-m', 'scripts.yaml_to_memory', str(kb_dir / 'content'), str(kb_dir / 'memory_store')],
+                    cwd=Path(__file__).parent.parent,
+                    capture_output=True,
+                    text=True,
+                    timeout=120
+                )
+                result['memory'] = {'success': memory_result.returncode == 0, 'output': memory_result.stdout[-500:] if memory_result.stdout else ''}
+                
+                result['status'] = 'completed'
+                
+                # Reload memory store after build
+                if result['memory']['success']:
+                    new_store = MemoryStore.load(kb_dir / 'memory_store')
+                    MemoryAPIHandler.store = new_store
+                    
+            except Exception as e:
+                result['status'] = 'error'
+                result['error'] = str(e)
+        
+        # Run build in background thread
+        thread = threading.Thread(target=run_build)
+        thread.daemon = True
+        thread.start()
+        
+        return result
     
     def _parse_multipart(self, body: bytes, boundary: str) -> dict:
         """Simple multipart/form-data parser."""

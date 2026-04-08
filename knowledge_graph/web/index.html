@@ -949,10 +949,12 @@
         const result = await response.json();
         
         if (response.ok && result.success) {
-          showToast(`✅ 已生成 ${result.entity_count} 个实体`, 'success');
+          showToast(`✅ 已生成 ${result.entity_count} 个实体，正在构建知识库...`, 'success');
           console.log('Generated entities:', result.entities);
-          // Refresh stats after a delay
-          setTimeout(loadStats, 2000);
+          console.log('Build status:', result.build);
+          
+          // Poll for build completion
+          pollBuildStatus(5);
         } else {
           showToast(`❌ ${result.error || '处理失败'}`, 'error');
         }
@@ -960,6 +962,29 @@
         showToast(`❌ 上传失败: ${error.message}`, 'error');
         console.error('Upload error:', error);
       }
+    }
+
+    // Poll build status
+    async function pollBuildStatus(maxAttempts = 10) {
+      for (let i = 0; i < maxAttempts; i++) {
+        await new Promise(r => setTimeout(r, 3000)); // Wait 3 seconds
+        
+        try {
+          const response = await fetch('http://localhost:8000/health');
+          const data = await response.json();
+          
+          if (response.ok) {
+            showToast(`✅ 知识库构建完成！共 ${data.items} 个实体`, 'success');
+            loadStats();
+            loadKbSelector();
+            return;
+          }
+        } catch (e) {
+          console.log('Waiting for build...');
+        }
+      }
+      
+      showToast('⚠️ 构建可能需要更长时间，请稍后刷新页面查看', 'warning');
     }
 
     // Get AI settings from localStorage
