@@ -46,7 +46,7 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
         return self.kb_manager
     
     def _handle_graph_data(self):
-        """Return graph data for visualization from current KB + base structure."""
+        """Return graph data for visualization from current KB."""
         try:
             import yaml
             import json
@@ -64,23 +64,25 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
             edges = []
             existing_ids = set()  # Track IDs to avoid duplicates
             
-            # 1. Load base structure from static graph.json (common for all KBs)
-            base_graph_path = Path(__file__).parent.parent / 'web' / 'data' / 'graph.json'
-            if base_graph_path.exists():
-                try:
-                    with open(base_graph_path, 'r', encoding='utf-8') as f:
-                        base_data = json.load(f)
-                        # Add base nodes
-                        for node in base_data.get('nodes', []):
-                            if node.get('id') not in existing_ids:
-                                nodes.append(node)
-                                existing_ids.add(node.get('id'))
-                        # Add base edges
-                        edges.extend(base_data.get('edges', []))
-                except Exception as e:
-                    print(f"Error loading base graph: {e}")
+            # Only load base structure for 'omics' knowledge base (the original default)
+            # Other KBs should have their own independent content
+            if current_kb.id == 'omics':
+                base_graph_path = Path(__file__).parent.parent / 'web' / 'data' / 'graph.json'
+                if base_graph_path.exists():
+                    try:
+                        with open(base_graph_path, 'r', encoding='utf-8') as f:
+                            base_data = json.load(f)
+                            # Add base nodes
+                            for node in base_data.get('nodes', []):
+                                if node.get('id') not in existing_ids:
+                                    nodes.append(node)
+                                    existing_ids.add(node.get('id'))
+                            # Add base edges
+                            edges.extend(base_data.get('edges', []))
+                    except Exception as e:
+                        print(f"Error loading base graph: {e}")
             
-            # 2. Load current KB's YAML entities (will override or supplement base)
+            # Load current KB's YAML entities
             if content_dir.exists():
                 for yaml_file in content_dir.rglob('*.yaml'):
                     if yaml_file.name == 'edges.yaml':

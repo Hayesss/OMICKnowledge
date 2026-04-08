@@ -80,6 +80,8 @@
     .nav-links {
       display: flex;
       gap: 8px;
+      position: relative;
+      z-index: 1002;
     }
 
     .nav-link {
@@ -92,6 +94,8 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      position: relative;
+      z-index: 1003;
     }
 
     .nav-link:hover {
@@ -138,7 +142,7 @@
       border-radius: var(--radius-md);
       box-shadow: 0 20px 60px rgba(0,0,0,0.5);
       display: none;
-      z-index: 1001;
+      z-index: 999;
       overflow: hidden;
     }
 

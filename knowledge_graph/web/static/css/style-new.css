@@ -161,6 +161,21 @@ body {
   min-width: 120px;
 }
 
+.kb-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kb-badge {
+  padding: 6px 12px;
+  background: var(--accent-purple);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+}
+
 .search-box {
   position: relative;
   flex-shrink: 1;
@@ -288,9 +303,60 @@ body {
   background: var(--bg-primary);
 }
 
+/* Ensure SVG can receive all pointer events */
+.viz-container svg {
+  pointer-events: all !important;
+}
+
 #viz-svg {
   width: 100%;
   height: 100%;
+  touch-action: none; /* Allow custom touch handling */
+  cursor: grab;
+}
+
+#viz-svg:active {
+  cursor: grabbing;
+}
+
+#viz-svg .nodes {
+  pointer-events: all;
+}
+
+/* Zoom Controls */
+.zoom-controls {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 100;
+}
+
+.zoom-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.zoom-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+}
+
+.zoom-btn:active {
+  transform: translateY(0);
 }
 
 .right-panel {

@@ -12,11 +12,41 @@ function escapeHtml(text) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const response = await fetch('data/graph.json');
+    // Show loading indicator
+    const svg = document.getElementById('viz-svg');
+    if (svg) {
+      svg.innerHTML = `
+        <foreignObject width="100%" height="100%">
+          <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:center;justify-content:center;height:100%;">
+            <div style="text-align:center;color:#666;">
+              <div style="width:40px;height:40px;border:3px solid #333;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px;"></div>
+              <p>加载知识图谱...</p>
+            </div>
+          </div>
+        </foreignObject>
+        <style>
+          @keyframes spin { to { transform: rotate(360deg); } }
+        </style>
+      `;
+    }
+    
+    // Try to load from API first (with cache-busting), fallback to static file
+    const timestamp = Date.now();
+    let response = await fetch(`http://localhost:8000/api/graph?t=${timestamp}`, {
+      cache: 'no-store'
+    });
+    if (!response.ok) {
+      console.log('API not available, falling back to static data...');
+      response = await fetch('data/graph.json');
+    }
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     const graphData = await response.json();
+    
+    // Log which KB is loaded
+    console.log(`Loaded graph for KB: ${graphData.kb_name || 'unknown'} (${graphData.kb_id || 'unknown'})`);
+    console.log(`Total nodes: ${graphData.nodes?.length || 0}, edges: ${graphData.edges?.length || 0}`);
     
     // Precompute link counts for node sizing
     const linkCounts = {};
@@ -30,6 +60,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     app = new App(graphData);
     window.app = app;
+    
+    // Update KB info display
+    const kbBadge = document.getElementById('kbBadge');
+    if (kbBadge && graphData.kb_name) {
+      kbBadge.textContent = graphData.kb_name;
+      kbBadge.title = `知识库: ${graphData.kb_name}\n节点数: ${graphData.nodes?.length || 0}\n边数: ${graphData.edges?.length || 0}`;
+    }
   } catch (err) {
     console.error('Failed to load graph data:', err);
     const svg = document.getElementById('viz-svg');
