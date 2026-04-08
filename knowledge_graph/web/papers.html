@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文献管理 - OMICKnowledge</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='url(%23g)'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%233b82f6'/%3E%3Cstop offset='100%25' style='stop-color:%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='35' r='8' fill='white'/%3E%3Ccircle cx='50' cy='60' r='8' fill='white'/%3E%3Ccircle cx='35' cy='85' r='5' fill='white' opacity='0.7'/%3E%3Ccircle cx='65' cy='85' r='5' fill='white' opacity='0.7'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg-primary: #0d0d0d;
+      --bg-secondary: #1a1a1a;
+      --bg-tertiary: #262626;
+      --bg-hover: #2d2d2d;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0a0;
+      --text-muted: #666666;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      --border-color: #333333;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --error: #ef4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* Navigation */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(13, 13, 13, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      z-index: 1000;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent-gradient);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-link {
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+      background: var(--bg-hover);
+    }
+
+    .nav-link.active {
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+    }
+
+    /* KB Selector */
+    .kb-selector {
+      position: relative;
+      margin-left: 16px;
+    }
+
+    .kb-selector-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .kb-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 8px;
+      min-width: 220px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      display: none;
+      z-index: 1001;
+    }
+
+    .kb-dropdown.show {
+      display: block;
+    }
+
+    /* Main Content */
+    .main-container {
+      padding-top: 64px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-left: 40px;
+      padding-right: 40px;
+      padding-bottom: 60px;
+    }
+
+    .page-header {
+      padding: 48px 0 32px;
+    }
+
+    .page-header h1 {
+      font-size: 32px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      color: var(--text-secondary);
+    }
+
+    /* Filters */
+    .filters-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .filters-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .filters-header h2 {
+      font-size: 18px;
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .filter-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .filter-field label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .filter-field input,
+    .filter-field select {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 24px;
+      padding: 16px 24px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent-blue);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Paper List */
+    .paper-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .paper-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .paper-card:hover {
+      border-color: var(--accent-blue);
+      background: var(--bg-tertiary);
+    }
+
+    .paper-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .paper-title {
+      font-size: 16px;
+      font-weight: 600;
+      flex: 1;
+      margin-right: 16px;
+    }
+
+    .paper-status {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .paper-status.completed {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+    }
+
+    .paper-status.processing {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+    }
+
+    .paper-meta {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .paper-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .paper-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .paper-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .paper-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .paper-tag {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: var(--bg-hover);
+      color: var(--text-secondary);
+    }
+
+    .paper-entities {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state h3 {
+      font-size: 20px;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      margin-bottom: 24px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-gradient);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 800px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    .modal-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .modal-header h2 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .modal-header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 24px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .extracted-entities {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .entity-mini-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+    }
+
+    .entity-mini-card .type {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .entity-mini-card .name {
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .main-container {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .filters-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .paper-meta {
+        flex-direction: column;
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/><path d="M6 5h2v14H6zM16 5h2v14h-2z" opacity="0.5"/></svg>
+      </div>
+      <span>OMICKnowledge</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">首页</a>
+      <a href="graph.html" class="nav-link">知识图谱</a>
+      <a href="papers.html" class="nav-link active">文献管理</a>
+      <a href="kb_manager.html" class="nav-link">知识库</a>
+    </div>
+    <div class="kb-selector">
+      <button class="kb-selector-btn" onclick="toggleKbDropdown()">
+        <span id="currentKbName">加载中...</span>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+      </button>
+      <div class="kb-dropdown" id="kbDropdown"></div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-container">
+    <div class="page-header">
+      <h1>文献管理</h1>
+      <p>查看和管理所有导入的 PDF 文献</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-card">
+      <div class="filters-header">
+        <h2>筛选文献</h2>
+        <a href="index.html" class="btn btn-primary">上传新文献</a>
+      </div>
+      <div class="filters-grid">
+        <div class="filter-field">
+          <label>关键词</label>
+          <input type="text" id="keywordFilter" placeholder="搜索标题、描述...">
+        </div>
+        <div class="filter-field">
+          <label>排序方式</label>
+          <select id="sortFilter">
+            <option value="newest">最新导入</option>
+            <option value="oldest">最早导入</option>
+            <option value="name">按名称</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-value" id="totalPapers">-</span>
+        <span class="stat-label">文献总数</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="totalEntities">-</span>
+        <span class="stat-label">提取实体</span>
+      </div>
+    </div>
+
+    <!-- Paper List -->
+    <div class="paper-list" id="paperList">
+      <div class="empty-state">
+        <h3>暂无文献</h3>
+        <p>还没有导入任何 PDF 文献</p>
+        <a href="index.html" class="btn btn-primary">上传文献</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Paper Detail Modal -->
+  <div class="modal-overlay" id="paperModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h2 id="modalTitle">文献详情</h2>
+          <p id="modalMeta">导入时间：2024-01-01</p>
+        </div>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h3 style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; text-transform: uppercase;">提取的知识实体</h3>
+        <div class="extracted-entities" id="extractedEntities"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">关闭</button>
+        <a href="graph.html" class="btn btn-primary">在图谱中查看</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let currentKb = null;
+    let allPapers = [];
+    let filteredPapers = [];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadKbInfo();
+      loadPapers();
+      setupFilters();
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.kb-selector')) {
+        document.getElementById('kbDropdown').classList.remove('show');
+      }
+    });
+
+    async function loadKbInfo() {
+      try {
+        const response = await fetch('http://localhost:8000/api/kb/current');
+        const data = await response.json();
+        if (data.success && data.knowledge_base) {
+          currentKb = data.knowledge_base;
+          document.getElementById('currentKbName').textContent = currentKb.name;
+        }
+      } catch (e) {
+        console.error('Failed to load KB:', e);
+      }
+    }
+
+    function toggleKbDropdown() {
+      document.getElementById('kbDropdown').classList.toggle('show');
+    }
+
+    async function loadPapers() {
+      try {
+        // Load all entities from current KB
+        const response = await fetch('http://localhost:8000/stats');
+        const data = await response.json();
+        
+        // Load YAML files from resources directory
+        if (currentKb) {
+          const papers = await loadResourcesFromFiles();
+          allPapers = papers;
+          filteredPapers = papers;
+          renderPapers();
+          updateStats();
+        }
+      } catch (e) {
+        console.error('Failed to load papers:', e);
+      }
+    }
+
+    async function loadResourcesFromFiles() {
+      // In a real implementation, this would be an API endpoint
+      // For now, we'll use the memory store data
+      try {
+        const response = await fetch('http://localhost:8000/search?q=source_pdf&k=100');
+        const data = await response.json();
+        
+        // Group by source PDF
+        const papersMap = new Map();
+        
+        if (data.results) {
+          data.results.forEach(entity => {
+            const sourcePdf = entity.metadata?.original_data?.metadata?.source_pdf || 
+                             entity.metadata?.source_file || 
+                             'unknown.pdf';
+            
+            if (!papersMap.has(sourcePdf)) {
+              papersMap.set(sourcePdf, {
+                filename: sourcePdf,
+                title: entity.metadata?.original_data?.name || sourcePdf,
+                description: entity.metadata?.original_data?.description || '',
+                importedAt: entity.metadata?.original_data?.metadata?.created_at || new Date().toISOString(),
+                entities: []
+              });
+            }
+            
+            papersMap.get(sourcePdf).entities.push({
+              id: entity.id,
+              name: entity.metadata?.name || entity.id,
+              type: entity.metadata?.entity_type || 'unknown',
+              description: entity.text?.substring(0, 100) + '...'
+            });
+          });
+        }
+        
+        return Array.from(papersMap.values());
+      } catch (e) {
+        console.error('Failed to load from files:', e);
+        return [];
+      }
+    }
+
+    function setupFilters() {
+      const keywordFilter = document.getElementById('keywordFilter');
+      const sortFilter = document.getElementById('sortFilter');
+      
+      keywordFilter.addEventListener('input', debounce(() => {
+        filterPapers();
+      }, 300));
+      
+      sortFilter.addEventListener('change', () => {
+        sortPapers();
+      });
+    }
+
+    function filterPapers() {
+      const keyword = document.getElementById('keywordFilter').value.toLowerCase();
+      
+      filteredPapers = allPapers.filter(paper => {
+        return !keyword || 
+               paper.title.toLowerCase().includes(keyword) ||
+               paper.description.toLowerCase().includes(keyword);
+      });
+      
+      sortPapers();
+    }
+
+    function sortPapers() {
+      const sortBy = document.getElementById('sortFilter').value;
+      
+      filteredPapers.sort((a, b) => {
+        if (sortBy === 'newest') {
+          return new Date(b.importedAt) - new Date(a.importedAt);
+        } else if (sortBy === 'oldest') {
+          return new Date(a.importedAt) - new Date(b.importedAt);
+        } else if (sortBy === 'name') {
+          return a.title.localeCompare(b.title);
+        }
+        return 0;
+      });
+      
+      renderPapers();
+    }
+
+    function renderPapers() {
+      const container = document.getElementById('paperList');
+      
+      if (filteredPapers.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h3>暂无文献</h3>
+            <p>还没有导入任何 PDF 文献</p>
+            <a href="index.html" class="btn btn-primary">上传文献</a>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = filteredPapers.map((paper, index) => `
+        <div class="paper-card" onclick="showPaperDetail(${index})">
+          <div class="paper-header">
+            <div class="paper-title">${escapeHtml(paper.title)}</div>
+            <span class="paper-status completed">已完成</span>
+          </div>
+          <div class="paper-meta">
+            <div class="paper-meta-item">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6z"/></svg>
+              ${escapeHtml(paper.filename)}
+            </div>
+            <div class="paper-meta-item">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+              ${new Date(paper.importedAt).toLocaleDateString('zh-CN')}
+            </div>
+          </div>
+          <div class="paper-desc">${escapeHtml(paper.description || '暂无描述')}</div>
+          <div class="paper-footer">
+            <div class="paper-tags">
+              ${paper.entities.slice(0, 3).map(e => `<span class="paper-tag">${escapeHtml(e.name)}</span>`).join('')}
+              ${paper.entities.length > 3 ? `<span class="paper-tag">+${paper.entities.length - 3}</span>` : ''}
+            </div>
+            <div class="paper-entities">共 ${paper.entities.length} 个实体</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateStats() {
+      document.getElementById('totalPapers').textContent = allPapers.length;
+      const totalEntities = allPapers.reduce((sum, p) => sum + p.entities.length, 0);
+      document.getElementById('totalEntities').textContent = totalEntities;
+    }
+
+    function showPaperDetail(index) {
+      const paper = filteredPapers[index];
+      if (!paper) return;
+      
+      document.getElementById('modalTitle').textContent = paper.title;
+      document.getElementById('modalMeta').textContent = `导入时间：${new Date(paper.importedAt).toLocaleString('zh-CN')} | 文件：${paper.filename}`;
+      
+      const entitiesContainer = document.getElementById('extractedEntities');
+      entitiesContainer.innerHTML = paper.entities.map(e => `
+        <div class="entity-mini-card">
+          <div class="type">${e.type}</div>
+          <div class="name">${escapeHtml(e.name)}</div>
+        </div>
+      `).join('');
+      
+      document.getElementById('paperModal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('paperModal').classList.remove('show');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function debounce(fn, ms) {
+      let timeout;
+      return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn(...args), ms);
+      };
+    }
+  </script>
+</body>
+</html>
