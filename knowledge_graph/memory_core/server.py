@@ -481,12 +481,25 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
                 # Auto-build: export wiki and rebuild memory store
                 build_result = self._auto_build_kb(kb_manager, current_kb)
                 
+                # Prepare entity details with file paths
+                entity_details = []
+                for e in result['entities']:
+                    entity_details.append({
+                        'id': e['id'],
+                        'name': e['name'],
+                        'type': e['type'],
+                        'description': e['description'][:100] + '...' if len(e['description']) > 100 else e['description'],
+                        'file_path': f"kb/{current_kb.id if current_kb else 'content'}/content/{e['type']}/{e['id']}.yaml",
+                        'url': f"/editor/index.html?type={e['type']}&id={e['id']}"
+                    })
+                
                 self._send_json({
                     'success': True,
                     'message': f'PDF processed successfully',
                     'filename': result['filename'],
                     'entity_count': result['entity_count'],
-                    'entities': [e['id'] for e in result['entities']],
+                    'entities': entity_details,
+                    'kb_id': current_kb.id if current_kb else None,
                     'build': build_result
                 })
                 
