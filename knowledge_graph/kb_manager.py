@@ -122,6 +122,9 @@ class KnowledgeBaseManager:
         (kb_dir / "memory_store").mkdir()
         (kb_dir / "web" / "data").mkdir(parents=True)
         
+        # 初始化空的 memory_store
+        self._init_memory_store(kb_dir / "memory_store")
+        
         # 保存配置
         self._save_kb_config(kb)
         
@@ -264,6 +267,30 @@ class KnowledgeBaseManager:
         config_file = self.get_kb_config_file(kb.id)
         with open(config_file, 'w', encoding='utf-8') as f:
             yaml.dump(kb.to_dict(), f, allow_unicode=True, sort_keys=False)
+    
+    def _init_memory_store(self, memory_dir: Path):
+        """初始化空的 memory store"""
+        import numpy as np
+        
+        # 默认 embedding 维度 (all-MiniLM-L6-v2)
+        embedding_dim = 384
+        
+        # 创建 config.json
+        config = {
+            'embedding_dim': embedding_dim,
+            'item_count': 0,
+            'version': '1.0'
+        }
+        with open(memory_dir / 'config.json', 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=2)
+        
+        # 创建空的 embeddings.npy
+        embeddings = np.zeros((0, embedding_dim), dtype=np.float32)
+        np.save(memory_dir / 'embeddings.npy', embeddings)
+        
+        # 创建空的 items.jsonl
+        with open(memory_dir / 'items.jsonl', 'w', encoding='utf-8') as f:
+            pass  # 空文件
     
     def _count_entities(self, kb_id: str) -> int:
         """统计知识库实体数量"""
