@@ -36,6 +36,15 @@ web/data/graph.json
 memory_store/
 *.npy
 
+# User-imported content (kb data is personal)
+kb/*/content/**/*.yaml
+kb/*/memory_store/
+kb/*/.import_records/
+kb/*/wiki/sources/*.md
+kb/*/wiki/log.md
+!kb/*/content/edges.yaml
+!kb/*/config.yaml
+
 # Testing
 .pytest_cache/
 .coverage
