@@ -10,13 +10,14 @@ Usage:
 
 import sys
 import yaml
+import numpy as np
 from pathlib import Path
 from typing import List, Dict, Any
 
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from memory_core.memory_store import MemoryStore
+from memory_core.memory_store import MemoryStore, MemoryItem
 from memory_core.embedder import Embedder
 
 
@@ -60,8 +61,10 @@ def build_memory_store(content_dir: Path, memory_dir: Path, model_name: str = "a
     print(f"🧠 初始化 embedder ({model_name})...")
     embedder = Embedder(model_name)
     
-    print("📊 创建 memory store...")
-    store = MemoryStore(embedding_dim=embedder.embedding_dim)
+    print("📊 准备文本和元数据...")
+    texts = []
+    metadata_list = []
+    entity_ids = []
     
     for i, entity in enumerate(entities, 1):
         entity_id = entity.get('id', f'entity_{i}')
@@ -89,14 +92,31 @@ def build_memory_store(content_dir: Path, memory_dir: Path, model_name: str = "a
             'original_data': {k: v for k, v in entity.items() if not k.startswith('_')}
         }
         
-        # 添加到 store
-        store.add(entity_id, text, embedding=None, metadata=metadata)
+        texts.append(text)
+        metadata_list.append(metadata)
+        entity_ids.append(entity_id)
         
         if i % 10 == 0:
-            print(f"  已处理 {i}/{len(entities)}...")
+            print(f"  已准备 {i}/{len(entities)}...")
     
-    print(f"🔢 生成向量嵌入 ({len(store)} 个实体)...")
-    store.build_embeddings(embedder)
+    print(f"🔢 生成向量嵌入 ({len(texts)} 个实体)...")
+    embeddings = embedder.embed_batch(texts)
+    
+    print("📦 创建 memory store...")
+    store = MemoryStore(embedding_dim=embedder.embedding_dim)
+    
+    # 创建 MemoryItem 并添加到 store
+    for i, (entity_id, text, metadata, embedding) in enumerate(zip(entity_ids, texts, metadata_list, embeddings)):
+        item = MemoryItem(
+            id=entity_id,
+            text=text,
+            embedding=embedding,
+            metadata=metadata
+        )
+        store.add(item)
+        
+        if (i + 1) % 10 == 0:
+            print(f"  已添加 {i + 1}/{len(texts)}...")
     
     print(f"💾 保存到 {memory_dir}...")
     store.save(memory_dir)
