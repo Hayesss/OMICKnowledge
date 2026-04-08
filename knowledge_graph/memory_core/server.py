@@ -195,6 +195,42 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
                 self._send_error(f'Failed to get current knowledge base: {str(e)}')
             return
         
+        # PDF Import Records API
+        if path == '/api/papers':
+            try:
+                kb_id = params.get('kb', [''])[0]
+                if not kb_id:
+                    kb_manager = self._get_kb_manager()
+                    current = kb_manager.get_current_kb()
+                    kb_id = current.id if current else 'omics'
+                
+                sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+                from pdf_import_record import PDFImportRecordManager
+                
+                record_manager = PDFImportRecordManager()
+                records = record_manager.get_records(kb_id)
+                stats = record_manager.get_stats(kb_id)
+                
+                self._send_json({
+                    'success': True,
+                    'papers': [
+                        {
+                            'id': r.id,
+                            'filename': r.filename,
+                            'imported_at': r.imported_at,
+                            'entity_count': r.entity_count,
+                            'entities': r.entities,
+                            'status': r.status
+                        }
+                        for r in records
+                    ],
+                    'stats': stats,
+                    'kb_id': kb_id
+                })
+            except Exception as e:
+                self._send_error(f'Failed to get papers: {str(e)}')
+            return
+        
         # 404
         self._send_error('Not found', 404)
     
@@ -477,6 +513,18 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
                     output_dir = Path('content')
                 
                 processor.save_entities_to_yaml(result, str(output_dir))
+                
+                # Record import history
+                sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
+                from pdf_import_record import PDFImportRecordManager, create_import_record
+                
+                record_manager = PDFImportRecordManager()
+                import_record = create_import_record(
+                    filename=parts['pdf'].get('filename', 'unknown.pdf'),
+                    kb_id=current_kb.id if current_kb else 'default',
+                    entities=result['entities']
+                )
+                record_manager.add_record(import_record)
                 
                 # Auto-build: export wiki and rebuild memory store
                 build_result = self._auto_build_kb(kb_manager, current_kb)

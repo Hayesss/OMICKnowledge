@@ -1,0 +1,8 @@
+id: omics
+name: 多组学分析
+description: 多组学数据分析知识库（CUT&Tag、ATAC-seq、scRNA-seq、Hi-C 等）
+created_at: '2026-04-08T01:01:50.275053'
+updated_at: '2026-04-08T01:01:50.275053'
+entity_count: 0
+icon: 📚
+color: '#3b82f6'

@@ -1,0 +1,40 @@
+id: tmpzf31tdkg-paper
+name: Proteogenomic data and resources for pan-cancer analysis
+type: resources
+description: The National Cancer Institute’s Clinical Proteomic Tumor Analysis Consortium
+  (CPTAC) generates harmonized genomic, transcriptomic, proteomic, and clinical data
+  for over 1000 tumors across 10 cohorts t
+detailed_explanation: '# Proteogenomic data and resources for pan-cancer analysis
+
+
+  ## 摘要
+
+  The National Cancer Institute’s Clinical Proteomic Tumor Analysis Consortium (CPTAC)
+  generates harmonized genomic, transcriptomic, proteomic, and clinical data for over
+  1000 tumors across 10 cohorts to enable pan-cancer investigations. This work outlines
+  CPTAC''s efforts in data harmonization, dissemination, and computational resources
+  to facilitate biological discoveries. Challenges in integrating multi-omics data,
+  especially combining nucleotide sequencing and mass spectrometry proteomics data,
+  are discussed.
+
+
+  ## 关键词
+
+  proteogenomics, pan-cancer, multi-omics, data harmonization, proteomics, genomics,
+  transcriptomics, clinical data'
+tags:
+- proteogenomics
+- pan-cancer
+- multi-omics
+- data harmonization
+- proteomics
+- genomics
+- transcriptomics
+- clinical data
+- 论文
+- 文献
+metadata:
+  source_pdf: tmpzf31tdkg.pdf
+  page_range: all
+  created_at: '2026-04-08T09:08:28.583271'
+  auto_extracted: true

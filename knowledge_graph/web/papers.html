@@ -630,62 +630,32 @@
 
     async function loadPapers() {
       try {
-        // Load all entities from current KB
-        const response = await fetch('http://localhost:8000/stats');
+        // Load PDF import records from API
+        const response = await fetch('http://localhost:8000/api/papers');
         const data = await response.json();
         
-        // Load YAML files from resources directory
-        if (currentKb) {
-          const papers = await loadResourcesFromFiles();
-          allPapers = papers;
-          filteredPapers = papers;
+        if (data.success) {
+          allPapers = data.papers.map(p => ({
+            id: p.id,
+            filename: p.filename,
+            title: p.filename.replace(/\.pdf$/i, ''),  // Use filename as title
+            description: `${p.entity_count} 个实体已提取`,
+            importedAt: p.imported_at,
+            entities: p.entities || [],
+            status: p.status,
+            kb_id: data.kb_id
+          }));
+          filteredPapers = [...allPapers];
           renderPapers();
-          updateStats();
+          
+          // Update stats from API
+          if (data.stats) {
+            document.getElementById('totalPapers').textContent = data.stats.total_papers;
+            document.getElementById('totalEntities').textContent = data.stats.total_entities;
+          }
         }
       } catch (e) {
         console.error('Failed to load papers:', e);
-      }
-    }
-
-    async function loadResourcesFromFiles() {
-      // In a real implementation, this would be an API endpoint
-      // For now, we'll use the memory store data
-      try {
-        const response = await fetch('http://localhost:8000/search?q=source_pdf&k=100');
-        const data = await response.json();
-        
-        // Group by source PDF
-        const papersMap = new Map();
-        
-        if (data.results) {
-          data.results.forEach(entity => {
-            const sourcePdf = entity.metadata?.original_data?.metadata?.source_pdf || 
-                             entity.metadata?.source_file || 
-                             'unknown.pdf';
-            
-            if (!papersMap.has(sourcePdf)) {
-              papersMap.set(sourcePdf, {
-                filename: sourcePdf,
-                title: entity.metadata?.original_data?.name || sourcePdf,
-                description: entity.metadata?.original_data?.description || '',
-                importedAt: entity.metadata?.original_data?.metadata?.created_at || new Date().toISOString(),
-                entities: []
-              });
-            }
-            
-            papersMap.get(sourcePdf).entities.push({
-              id: entity.id,
-              name: entity.metadata?.name || entity.id,
-              type: entity.metadata?.entity_type || 'unknown',
-              description: entity.text?.substring(0, 100) + '...'
-            });
-          });
-        }
-        
-        return Array.from(papersMap.values());
-      } catch (e) {
-        console.error('Failed to load from files:', e);
-        return [];
       }
     }
 

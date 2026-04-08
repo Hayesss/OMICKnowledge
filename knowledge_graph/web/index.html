@@ -828,11 +828,23 @@
   <!-- PDF Upload Section -->
   <section class="upload-section">
     <div class="upload-card" id="uploadZone">
-      <div class="upload-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
+      <div class="upload-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
       <h3>拖放 PDF 文件到此处</h3>
-      <p>支持学术论文自动解析，提取方法、工具、概念生成知识实体</p>
+      <p>AI 自动解析论文，提取方法、工具、概念并生成知识图谱</p>
+      
+      <!-- Target KB Selection -->
+      <div class="target-kb-selector" style="margin: 20px 0; text-align: left; max-width: 300px; margin-left: auto; margin-right: auto;">
+        <label style="display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v4h-2v-4H9V9h4V5h2v4h4v2z"/></svg>
+          导入到知识库
+        </label>
+        <select id="targetKbSelect" style="width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 14px; color: var(--text-primary); font-size: 14px;">
+          <option value="">加载中...</option>
+        </select>
+      </div>
+      
       <label class="upload-btn">
-        <span>📁</span> 选择文件
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="vertical-align:middle;margin-right:4px"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> 选择文件
         <input type="file" class="file-input" id="pdfInput" accept=".pdf" multiple>
       </label>
     </div>
@@ -970,6 +982,12 @@
               </div>
             `).join('');
           }
+          
+          // Fill target KB select
+          const targetSelect = document.getElementById('targetKbSelect');
+          targetSelect.innerHTML = data.knowledge_bases.map(kb => `
+            <option value="${kb.id}" ${kb.id === current?.id ? 'selected' : ''}>${kb.name}</option>
+          `).join('');
         } else {
           console.error('API error:', data.error);
           document.getElementById('currentKbName').textContent = '加载失败';
@@ -1093,11 +1111,37 @@
 
     async function uploadPDF(file, settings) {
       try {
+        // Get target KB
+        const targetKb = document.getElementById('targetKbSelect').value;
+        if (!targetKb) {
+          showToast('请先选择目标知识库', 'error');
+          return;
+        }
+        
+        // Switch to target KB if different
+        const currentKbName = document.getElementById('currentKbName').textContent;
+        const targetKbText = document.getElementById('targetKbSelect').options[document.getElementById('targetKbSelect').selectedIndex].text;
+        
+        if (targetKbText !== currentKbName) {
+          showToast(`正在切换到知识库: ${targetKbText}...`, 'success');
+          const switchResponse = await fetch('http://localhost:8000/api/kb/switch', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({id: targetKb})
+          });
+          if (!switchResponse.ok) {
+            throw new Error('切换知识库失败');
+          }
+          // Update current KB display
+          document.getElementById('currentKbName').textContent = targetKbText;
+        }
+        
         const formData = new FormData();
         formData.append('pdf', file);
         formData.append('apiBase', settings.apiBase || 'https://api.openai-proxy.org');
         formData.append('apiKey', settings.apiKey);
         formData.append('model', settings.model || 'gpt-4.1-mini');
+        formData.append('kbId', targetKb);
 
         showToast(`正在解析: ${file.name}...`, 'success');
         

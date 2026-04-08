@@ -1,0 +1,23 @@
+id: tmpzf31tdkg-concept-11
+name: Introduction
+type: concepts
+description: Discusses the importance of comprehensive molecular profiling in cancer
+  research, highlighting limitations of sequencing-only approaches and the neces
+detailed_explanation: '## Introduction
+
+
+  Discusses the importance of comprehensive molecular profiling in cancer research,
+  highlighting limitations of sequencing-only approaches and the necessity of proteogenomic
+  methods to link genotype to phenotype. Reviews CPTAC''s generation of multi-omics
+  datasets from freshly acquired tumors to avoid ischemic artifacts and enable pan-cancer
+  integrative analysis.'
+tags:
+- 概念
+- 知识
+- proteogenomics
+- pan-cancer
+metadata:
+  source_pdf: tmpzf31tdkg.pdf
+  page_range: Introduction
+  created_at: '2026-04-08T09:08:28.583271'
+  auto_extracted: true

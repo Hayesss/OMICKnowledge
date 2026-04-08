@@ -1,0 +1,22 @@
+id: tmpkzdtmypq-method-2
+name: RNA-seq data processing with multiple pipelines in
+type: steps
+description: '论文中使用的方法: RNA-seq data processing with multiple pipelines including
+  circular RNA detection'
+detailed_explanation: '## 方法
+
+  RNA-seq data processing with multiple pipelines including circular RNA detection
+
+
+  来源: Proteogenomic data and resources for pan-cancer analysis'
+tags:
+- 方法
+- protocol
+- proteogenomics
+- pan-cancer analysis
+- multi-omics
+metadata:
+  source_pdf: tmpkzdtmypq.pdf
+  page_range: methods
+  created_at: '2026-04-08T09:58:09.218506'
+  auto_extracted: true

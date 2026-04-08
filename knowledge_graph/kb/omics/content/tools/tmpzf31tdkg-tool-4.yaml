@@ -1,0 +1,18 @@
+id: tmpzf31tdkg-tool-4
+name: Baylor College of Medicine RNA-seq pipeline
+type: tools
+description: 论文中使用的工具/软件
+detailed_explanation: '## 工具: Baylor College of Medicine RNA-seq pipeline
+
+
+  在论文 ''Proteogenomic data and resources for pan-cancer analysis'' 中使用'
+tags:
+- 软件
+- 工具
+- proteogenomics
+- pan-cancer
+metadata:
+  source_pdf: tmpzf31tdkg.pdf
+  page_range: methods
+  created_at: '2026-04-08T09:08:28.583271'
+  auto_extracted: true

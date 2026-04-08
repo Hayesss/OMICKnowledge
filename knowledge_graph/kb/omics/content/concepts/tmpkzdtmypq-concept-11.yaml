@@ -1,0 +1,28 @@
+id: tmpkzdtmypq-concept-11
+name: INTRODUCTION
+type: concepts
+description: Comprehensive molecular profiling is transforming cancer research by
+  linking genomic mutations to phenotypes via proteogenomic approaches. CPTAC has
+  g
+detailed_explanation: '## INTRODUCTION
+
+
+  Comprehensive molecular profiling is transforming cancer research by linking genomic
+  mutations to phenotypes via proteogenomic approaches. CPTAC has generated multi-omics
+  data from prospectively collected tumors across 10 cancer cohorts, including genomics,
+  transcriptomics, proteomics, and phosphoproteomics, with additional molecular classifications
+  and clinical data. The data have been re-processed and harmonized to enable pan-cancer
+  integrative analyses. Pan-cancer studies have revealed mechanisms of cancer development,
+  including dysregulated DNA repair, metabolic regulation, and protein post-translational
+  modifications. The datasets serve as a resource for the community to facilitate
+  biological discoveries.'
+tags:
+- 概念
+- 知识
+- proteogenomics
+- pan-cancer analysis
+metadata:
+  source_pdf: tmpkzdtmypq.pdf
+  page_range: INTRODUCTION
+  created_at: '2026-04-08T09:58:09.218506'
+  auto_extracted: true

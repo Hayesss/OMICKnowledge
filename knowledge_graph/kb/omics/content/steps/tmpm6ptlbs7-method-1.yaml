@@ -1,0 +1,21 @@
+id: tmpm6ptlbs7-method-1
+name: Somatic mutation calling with ensemble pipelines
+type: steps
+description: '论文中使用的方法: Somatic mutation calling with ensemble pipelines'
+detailed_explanation: '## 方法
+
+  Somatic mutation calling with ensemble pipelines
+
+
+  来源: Proteogenomic data and resources for pan-cancer analysis'
+tags:
+- 方法
+- protocol
+- proteogenomics
+- pan-cancer analysis
+- multi-omics
+metadata:
+  source_pdf: tmpm6ptlbs7.pdf
+  page_range: methods
+  created_at: '2026-04-08T09:18:31.062360'
+  auto_extracted: true

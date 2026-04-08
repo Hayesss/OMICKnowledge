@@ -1,0 +1,21 @@
+id: tmpkzdtmypq-method-1
+name: Somatic mutation calling using ensemble pipelines
+type: steps
+description: '论文中使用的方法: Somatic mutation calling using ensemble pipelines'
+detailed_explanation: '## 方法
+
+  Somatic mutation calling using ensemble pipelines
+
+
+  来源: Proteogenomic data and resources for pan-cancer analysis'
+tags:
+- 方法
+- protocol
+- proteogenomics
+- pan-cancer analysis
+- multi-omics
+metadata:
+  source_pdf: tmpkzdtmypq.pdf
+  page_range: methods
+  created_at: '2026-04-08T09:58:09.218506'
+  auto_extracted: true
