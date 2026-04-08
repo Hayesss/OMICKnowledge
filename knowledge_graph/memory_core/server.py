@@ -45,6 +45,134 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
             self.kb_manager = KnowledgeBaseManager()
         return self.kb_manager
     
+    def _handle_graph_data(self):
+        """Return graph data for visualization from current KB + base structure."""
+        try:
+            import yaml
+            import json
+            
+            kb_manager = self._get_kb_manager()
+            current_kb = kb_manager.get_current_kb()
+            
+            if not current_kb:
+                self._send_json({'nodes': [], 'edges': []})
+                return
+            
+            content_dir = kb_manager.get_kb_content_dir(current_kb.id)
+            
+            nodes = []
+            edges = []
+            existing_ids = set()  # Track IDs to avoid duplicates
+            
+            # 1. Load base structure from static graph.json (common for all KBs)
+            base_graph_path = Path(__file__).parent.parent / 'web' / 'data' / 'graph.json'
+            if base_graph_path.exists():
+                try:
+                    with open(base_graph_path, 'r', encoding='utf-8') as f:
+                        base_data = json.load(f)
+                        # Add base nodes
+                        for node in base_data.get('nodes', []):
+                            if node.get('id') not in existing_ids:
+                                nodes.append(node)
+                                existing_ids.add(node.get('id'))
+                        # Add base edges
+                        edges.extend(base_data.get('edges', []))
+                except Exception as e:
+                    print(f"Error loading base graph: {e}")
+            
+            # 2. Load current KB's YAML entities (will override or supplement base)
+            if content_dir.exists():
+                for yaml_file in content_dir.rglob('*.yaml'):
+                    if yaml_file.name == 'edges.yaml':
+                        continue
+                    try:
+                        with open(yaml_file, 'r', encoding='utf-8') as f:
+                            entity = yaml.safe_load(f)
+                            if entity and isinstance(entity, dict):
+                                entity_id = entity.get('id', '')
+                                
+                                # Convert plural type names to singular for consistency
+                                type_mapping = {
+                                    'tools': 'tool',
+                                    'steps': 'step',
+                                    'concepts': 'concept',
+                                    'resources': 'resource',
+                                    'assays': 'assay',
+                                    'stages': 'stage',
+                                    'issues': 'issue'
+                                }
+                                raw_type = entity.get('type', 'unknown')
+                                node_type = type_mapping.get(raw_type, raw_type)
+                                
+                                node = {
+                                    'id': entity_id,
+                                    'name': entity.get('name', ''),
+                                    'type': node_type,
+                                    'description': entity.get('description', ''),
+                                    'detailed_explanation': entity.get('detailed_explanation', ''),
+                                    'tags': entity.get('tags', []),
+                                    'difficulty': entity.get('difficulty', 'intermediate'),
+                                    'source': entity.get('source', f'kb:{current_kb.id}')
+                                }
+                                # Add type-specific fields
+                                if raw_type == 'tools':
+                                    node['version'] = entity.get('version', '')
+                                    node['doc_url'] = entity.get('doc_url', '')
+                                    node['install_cmd'] = entity.get('install_cmd', '')
+                                    node['key_params'] = entity.get('key_params', [])
+                                    node['pros'] = entity.get('pros', [])
+                                    node['cons'] = entity.get('cons', [])
+                                elif raw_type == 'steps':
+                                    node['input'] = entity.get('input', '')
+                                    node['output'] = entity.get('output', '')
+                                    node['key_params'] = entity.get('key_params', [])
+                                elif raw_type == 'concepts':
+                                    node['common_misconceptions'] = entity.get('common_misconceptions', [])
+                                elif raw_type == 'issues':
+                                    node['solution'] = entity.get('solution', '')
+                                    node['related_tools'] = entity.get('related_tools', [])
+                                elif raw_type == 'resources':
+                                    node['url'] = entity.get('url', '')
+                                    node['resource_type'] = entity.get('resource_type', '')
+                                
+                                # Update existing node or add new
+                                if entity_id in existing_ids:
+                                    # Replace existing node with KB version
+                                    for i, n in enumerate(nodes):
+                                        if n.get('id') == entity_id:
+                                            nodes[i] = node
+                                            break
+                                else:
+                                    nodes.append(node)
+                                    existing_ids.add(entity_id)
+                    except Exception as e:
+                        print(f"Error loading {yaml_file}: {e}")
+                        continue
+            
+            # 3. Load edges from edges.yaml (supplement base edges)
+            edges_file = content_dir / 'edges.yaml'
+            if edges_file.exists():
+                try:
+                    with open(edges_file, 'r', encoding='utf-8') as f:
+                        edges_data = yaml.safe_load(f)
+                        if edges_data and isinstance(edges_data, list):
+                            # Add KB-specific edges
+                            edges.extend(edges_data)
+                except Exception as e:
+                    print(f"Error loading edges: {e}")
+            
+            self._send_json({
+                'nodes': nodes,
+                'edges': edges,
+                'kb_id': current_kb.id,
+                'kb_name': current_kb.name
+            })
+            
+        except Exception as e:
+            import traceback
+            print(f"Graph data error: {e}\n{traceback.format_exc()}")
+            self._send_error(f'Failed to load graph data: {str(e)}')
+    
     def do_GET(self):
         """Handle GET requests."""
         parsed = urlparse(self.path)
@@ -164,6 +292,11 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
                 'entity_types': entity_types,
                 'embedding_dim': self.store.embedding_dim
             })
+            return
+        
+        # Graph data for visualization
+        if path == '/api/graph':
+            self._handle_graph_data()
             return
         
         # Knowledge Base API
