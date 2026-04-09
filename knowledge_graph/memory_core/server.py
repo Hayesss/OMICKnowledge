@@ -1546,9 +1546,12 @@ def main():
         args.store = project_root / 'memory_store'
     
     if not args.store.exists():
-        print(f"Error: Memory store not found at {args.store}")
-        print("Run 'pixi run build-memory' first")
-        sys.exit(1)
+        print(f"Memory store not found at {args.store}")
+        print("Creating empty memory store...")
+        from memory_core.memory_store import MemoryStore
+        store = MemoryStore(embedding_dim=384)
+        store.save(args.store)
+        print(f"✓ Empty memory store created at {args.store}")
     
     run_server(args.store, args.port, args.model)
 
