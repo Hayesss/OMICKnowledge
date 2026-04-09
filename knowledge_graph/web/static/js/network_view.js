@@ -20,9 +20,6 @@ class NetworkView {
     // Initialize zoom behavior
     this.currentTransform = d3.zoomIdentity;
     this.zoom = null;
-    this.scale = 1;  // Manual scale for fallback
-    this.translateX = 0;
-    this.translateY = 0;
     
     this.simulation = null;
     this.nodes = [];
@@ -30,94 +27,45 @@ class NetworkView {
     this.nodeElements = null;
     this.linkElements = null;
     this.g = null;
-    
-    // Bind wheel handler
-    this._wheelHandler = this._handleWheel.bind(this);
-  }
-  
-  // Manual wheel handler as fallback
-  _handleWheel(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    // Debug log (remove in production)
-    console.log('Wheel event:', event.deltaY, 'Current scale:', this.scale);
-    
-    const delta = event.deltaY > 0 ? 0.9 : 1.1;
-    this.scale *= delta;
-    this.scale = Math.max(0.1, Math.min(4, this.scale));
-    
-    console.log('New scale:', this.scale);
-    this._applyTransform();
-  }
-  
-  _applyTransform() {
-    if (this.g) {
-      this.g.attr('transform', `translate(${this.translateX},${this.translateY}) scale(${this.scale})`);
-    }
   }
   
   initZoom() {
     if (!this.svg) return;
     
-    // Get the raw SVG element
-    const svgElement = this.svg.node();
-    if (!svgElement) return;
-    
-    // Remove any existing wheel listeners
-    svgElement.removeEventListener('wheel', this._wheelHandler);
-    
-    // Add manual wheel listener (direct DOM API for reliability)
-    svgElement.addEventListener('wheel', this._wheelHandler, { passive: false });
-    
-    // Also try D3 zoom as primary method
+    // Initialize D3 zoom behavior
     this.zoom = d3.zoom()
       .scaleExtent([0.1, 4])
       .on('zoom', (event) => {
         this.currentTransform = event.transform;
-        this.scale = event.transform.k;
-        this.translateX = event.transform.x;
-        this.translateY = event.transform.y;
         if (this.g) {
           this.g.attr('transform', event.transform);
         }
       });
     
-    // Apply zoom to SVG
-    this.svg.call(this.zoom)
-      .on('dblclick.zoom', null);  // Disable double-click zoom
+    // Apply zoom to a transparent rect that covers the entire SVG
+    // This ensures zoom works even when clicking/dragging on empty space
+    const svgElement = this.svg.node();
+    if (svgElement) {
+      // Apply zoom behavior to the SVG
+      this.svg.call(this.zoom)
+        .on('dblclick.zoom', null);  // Disable double-click zoom
+    }
   }
   
   // Public methods for zoom control
   zoomIn() {
-    this.scale *= 1.3;
-    this.scale = Math.min(4, this.scale);
-    this._applyTransform();
-    
-    // Also update D3 zoom if available
     if (this.svg && this.zoom) {
       this.svg.transition().duration(300).call(this.zoom.scaleBy, 1.3);
     }
   }
   
   zoomOut() {
-    this.scale *= 0.7;
-    this.scale = Math.max(0.1, this.scale);
-    this._applyTransform();
-    
-    // Also update D3 zoom if available
     if (this.svg && this.zoom) {
       this.svg.transition().duration(300).call(this.zoom.scaleBy, 0.7);
     }
   }
   
   resetZoom() {
-    this.scale = 1;
-    this.translateX = 0;
-    this.translateY = 0;
-    this._applyTransform();
-    
-    // Also update D3 zoom if available
     if (this.svg && this.zoom) {
       this.svg.transition().duration(500).call(this.zoom.transform, d3.zoomIdentity);
     }
