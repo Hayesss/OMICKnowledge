@@ -183,3 +183,19 @@ chmod -R 755 kb/
 pixi clean
 pixi install
 ```
+
+## 新服务器初始化
+
+如果启动时提示缺少 memory_store，服务器会自动创建空的存储。你也可以手动初始化：
+
+```bash
+# 方案1: 让服务器自动创建
+pixi run python -m memory_core.server --store kb/omics/memory_store
+# 会自动创建空的 memory_store
+
+# 方案2: 使用初始化脚本
+pixi run python scripts/setup_server.py
+
+# 方案3: 从内容重新构建
+pixi run python -m scripts.yaml_to_memory kb/omics/content kb/omics/memory_store
+```
