@@ -37,8 +37,8 @@ serve-memory = { cmd = "python -m memory_core.server" }
 # 运行测试
 test = { cmd = "pytest tests/ -v" }
 
-# 启动传统图谱服务器（前台运行，可通过 Ctrl+C 停止）
-serve = { cmd = "python -m http.server 8080", cwd = "web" }
+# 启动前端（端口 8080）
+serve-web = { cmd = "python -m http.server 8080", cwd = "web" }
 
 # 启动语义搜索界面
 serve-memory-web = { cmd = "python -m http.server 8081", cwd = "web_memory" }
@@ -46,11 +46,17 @@ serve-memory-web = { cmd = "python -m http.server 8081", cwd = "web_memory" }
 # 启动 Open WebUI（Docker）
 serve-openwebui = { cmd = "echo '请查看 OPEN_WEBUI_GUIDE.md 启动 Docker' && docker run -d -p 3000:8080 --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:main || echo '容器可能已存在，访问 http://localhost:3000'" }
 
-# 启动完整栈（API + Open WebUI）
-start-all = { cmd = "echo '请分别运行: pixi run serve-memory 和 pixi run serve-openwebui'" }
+# 一键启动前后端（前台运行，Ctrl+C 停止全部）
+up = { cmd = "python scripts/start_all.py" }
+
+# 一键启动（后台模式，输出日志到文件）
+up-bg = { cmd = "python -m memory_core.server --store kb/omics/memory_store > server.log 2>&1 & echo $! > .api.pid && cd web && python -m http.server 8080 > ../web.log 2>&1 & echo $! > ../.web.pid && echo 'OMICKnowledge 已后台启动' && echo 'API: http://localhost:8000' && echo 'Web: http://localhost:8080' && echo '日志: server.log, web.log'" }
+
+# 停止后台服务
+stop = { cmd = "[ -f .api.pid ] && kill $(cat .api.pid) 2>/dev/null && rm .api.pid && echo 'API 已停止' || echo 'API 未运行' && [ -f .web.pid ] && kill $(cat .web.pid) 2>/dev/null && rm .web.pid && echo 'Web 已停止' || echo 'Web 未运行'" }
 
 # 完整启动流程（传统图谱）：校验 → 构建 → 测试 → 启动服务器
-start = { depends-on = ["validate", "build", "test", "serve"] }
+start = { depends-on = ["validate", "build", "test", "serve-web"] }
 
 # 完整启动流程（记忆库）：构建记忆库 → 启动 API
 start-memory = { depends-on = ["build-memory", "serve-memory"] }
@@ -71,6 +77,3 @@ build-all = { depends-on = ["validate", "export-wiki", "build", "build-memory"] 
 
 # 启动 Wiki 本地服务器（查看生成的 Markdown）
 serve-wiki = { cmd = "python -m http.server 8082", cwd = "wiki" }
-
-# 快速启动（构建所有 + 启动 API + 启动 Web）
-up = { depends-on = ["build-all", "serve-memory"] }
