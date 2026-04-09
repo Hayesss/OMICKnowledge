@@ -8,23 +8,39 @@ import sys
 import time
 import signal
 import os
+import argparse
 from pathlib import Path
 
-# 配置
-API_PORT = 8000
-WEB_PORT = 8080
-API_CMD = [sys.executable, "-m", "memory_core.server", "--store", "kb/omics/memory_store"]
-WEB_CMD = [sys.executable, "-m", "http.server", str(WEB_PORT)]
+# 默认配置
+DEFAULT_API_PORT = int(os.environ.get('API_PORT', 8000))
+DEFAULT_WEB_PORT = int(os.environ.get('WEB_PORT', 8080))
 WEB_DIR = Path(__file__).parent.parent / "web"
+
+def get_parser():
+    parser = argparse.ArgumentParser(description='启动 OMICKnowledge 服务')
+    parser.add_argument('--api-port', type=int, default=DEFAULT_API_PORT, help='API 端口 (默认: 8000)')
+    parser.add_argument('--web-port', type=int, default=DEFAULT_WEB_PORT, help='Web 端口 (默认: 8080)')
+    parser.add_argument('--store', type=str, default='kb/omics/memory_store', help='Memory store 路径')
+    return parser
 
 def log(msg):
     print(f"[OMICKnowledge] {msg}")
 
 def main():
-    log("启动服务...")
+    parser = get_parser()
+    args = parser.parse_args()
+    
+    api_port = args.api_port
+    web_port = args.web_port
+    store_path = args.store
+    
+    API_CMD = [sys.executable, "-m", "memory_core.server", "--store", store_path, "--port", str(api_port)]
+    WEB_CMD = [sys.executable, "-m", "http.server", str(web_port)]
+    
+    log(f"启动服务 (API端口={api_port}, Web端口={web_port})...")
     
     # 启动 API 服务器
-    log(f"启动 API 服务 (端口 {API_PORT})...")
+    log(f"启动 API 服务 (端口 {api_port})...")
     api_proc = subprocess.Popen(
         API_CMD,
         stdout=subprocess.PIPE,
@@ -41,7 +57,7 @@ def main():
         return 1
     
     # 启动 Web 服务器
-    log(f"启动 Web 服务 (端口 {WEB_PORT})...")
+    log(f"启动 Web 服务 (端口 {web_port})...")
     web_proc = subprocess.Popen(
         WEB_CMD,
         cwd=WEB_DIR,
@@ -60,8 +76,8 @@ def main():
     
     log("=" * 50)
     log("✅ 服务已启动!")
-    log(f"   API: http://localhost:{API_PORT}")
-    log(f"   Web: http://localhost:{WEB_PORT}")
+    log(f"   API: http://localhost:{api_port}")
+    log(f"   Web: http://localhost:{web_port}")
     log("=" * 50)
     log("按 Ctrl+C 停止所有服务")
     log("-" * 50)

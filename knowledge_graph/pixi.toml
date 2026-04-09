@@ -47,13 +47,19 @@ serve-memory-web = { cmd = "python -m http.server 8081", cwd = "web_memory" }
 serve-openwebui = { cmd = "echo '请查看 OPEN_WEBUI_GUIDE.md 启动 Docker' && docker run -d -p 3000:8080 --add-host=host.docker.internal:host-gateway -v open-webui:/app/backend/data --name open-webui ghcr.io/open-webui/open-webui:main || echo '容器可能已存在，访问 http://localhost:3000'" }
 
 # 一键启动前后端（前台运行，Ctrl+C 停止全部）
+# 用法: pixi run up
+# 用法: pixi run up -- --api-port 8001 --web-port 8081
 up = { cmd = "python scripts/start_all.py" }
 
-# 一键启动（后台模式，输出日志到文件）
-up-bg = { cmd = "python -m memory_core.server --store kb/omics/memory_store > server.log 2>&1 & echo $! > .api.pid && cd web && python -m http.server 8080 > ../web.log 2>&1 & echo $! > ../.web.pid && echo 'OMICKnowledge 已后台启动' && echo 'API: http://localhost:8000' && echo 'Web: http://localhost:8080' && echo '日志: server.log, web.log'" }
+# 一键启动（后台模式，可通过环境变量指定端口）
+# 用法: API_PORT=8001 WEB_PORT=8081 pixi run up-bg
+up-bg = { cmd = "echo '启动 OMICKnowledge (后台模式)...' && python -m memory_core.server --store kb/omics/memory_store --port ${API_PORT:-8000} > server.log 2>&1 & echo $! > .api.pid && cd web && python -m http.server ${WEB_PORT:-8080} > ../web.log 2>&1 & echo $! > ../.web.pid && echo 'API: http://localhost:'${API_PORT:-8000} && echo 'Web: http://localhost:'${WEB_PORT:-8080} && echo '日志: server.log, web.log'" }
 
 # 停止后台服务
 stop = { cmd = "[ -f .api.pid ] && kill $(cat .api.pid) 2>/dev/null && rm .api.pid && echo 'API 已停止' || echo 'API 未运行' && [ -f .web.pid ] && kill $(cat .web.pid) 2>/dev/null && rm .web.pid && echo 'Web 已停止' || echo 'Web 未运行'" }
+
+# 使用指定端口启动（示例: API 用 8001，Web 用 8081）
+up-8001 = { cmd = "python scripts/start_all.py --api-port 8001 --web-port 8081" }
 
 # 完整启动流程（传统图谱）：校验 → 构建 → 测试 → 启动服务器
 start = { depends-on = ["validate", "build", "test", "serve-web"] }
