@@ -10,6 +10,7 @@ import signal
 import os
 import argparse
 import socket
+import json
 from pathlib import Path
 
 # 默认配置
@@ -33,6 +34,34 @@ def find_available_port(start_port, max_port=65535):
             return port
     return None
 
+def get_local_ip():
+    """获取本机IP地址"""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except:
+        return "localhost"
+
+def generate_config(api_port, web_port):
+    """生成前端配置文件"""
+    local_ip = get_local_ip()
+    config = {
+        "apiHost": local_ip,
+        "apiPort": api_port,
+        "webPort": web_port,
+        "generatedAt": time.strftime("%Y-%m-%d %H:%M:%S")
+    }
+    
+    # 写入 web 目录
+    config_path = WEB_DIR / "api_config.json"
+    with open(config_path, 'w', encoding='utf-8') as f:
+        json.dump(config, f, ensure_ascii=False, indent=2)
+    
+    return local_ip
+
 def get_parser():
     parser = argparse.ArgumentParser(description='启动 OMICKnowledge 服务')
     parser.add_argument('--api-port', type=int, default=DEFAULT_API_PORT, help='API 端口 (默认: 8000)')
@@ -52,24 +81,31 @@ def main():
     web_port = args.web_port
     store_path = args.store
     
-    # 检查端口是否可用
+    # 检查端口是否可用（API端口）
     if args.auto_port or not is_port_available(api_port):
         new_port = find_available_port(api_port)
         if new_port and new_port != api_port:
-            log(f"端口 {api_port} 被占用，使用端口 {new_port}")
+            log(f"API端口 {api_port} 被占用，使用端口 {new_port}")
             api_port = new_port
         elif not is_port_available(api_port):
-            log(f"错误: 无法找到可用端口")
+            log(f"错误: 无法找到可用API端口")
             return 1
     
+    # 检查端口是否可用（Web端口）- 确保API和Web端口不同
     if args.auto_port or not is_port_available(web_port):
         new_port = find_available_port(web_port)
+        # 确保不与API端口冲突
+        if new_port == api_port:
+            new_port = find_available_port(api_port + 1)
         if new_port and new_port != web_port:
-            log(f"端口 {web_port} 被占用，使用端口 {new_port}")
+            log(f"Web端口 {web_port} 被占用，使用端口 {new_port}")
             web_port = new_port
         elif not is_port_available(web_port):
-            log(f"错误: 无法找到可用端口")
+            log(f"错误: 无法找到可用Web端口")
             return 1
+    
+    # 生成配置文件
+    local_ip = generate_config(api_port, web_port)
     
     API_CMD = [sys.executable, "-m", "memory_core.server", "--store", store_path, "--port", str(api_port)]
     WEB_CMD = [sys.executable, "-m", "http.server", str(web_port)]
@@ -111,13 +147,21 @@ def main():
         api_proc.terminate()
         return 1
     
-    log("=" * 50)
+    log("=" * 60)
     log("✅ 服务已启动!")
+    log("")
+    log(f"📍 本机访问:")
     log(f"   API: http://localhost:{api_port}")
     log(f"   Web: http://localhost:{web_port}")
-    log("=" * 50)
+    log("")
+    log(f"🌐 远程访问 (其他机器):")
+    log(f"   API: http://{local_ip}:{api_port}")
+    log(f"   Web: http://{local_ip}:{web_port}")
+    log("")
+    log(f"💡 配置文件已生成: web/api_config.json")
+    log("=" * 60)
     log("按 Ctrl+C 停止所有服务")
-    log("-" * 50)
+    log("-" * 60)
     
     # 信号处理
     def shutdown(signum, frame):
