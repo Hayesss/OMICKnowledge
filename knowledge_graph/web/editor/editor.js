@@ -3,6 +3,9 @@
  * 实现表单处理、YAML 生成和 API 通信
  */
 
+// API 配置
+const apiUrl = (path) => window.OMICKnowledge?.config?.apiUrl(path) || `http://localhost:8000${path}`;
+
 // 全局状态
 let currentTags = [];
 let isEditing = false;
@@ -51,11 +54,11 @@ function setupEventListeners() {
 // 加载现有实体列表
 async function loadExistingEntities() {
     try {
-        const response = await fetch('http://localhost:8000/stats');
+        const response = await fetch(apiUrl('/stats'));
         const data = await response.json();
         
         // 获取所有实体
-        const entitiesResponse = await fetch('http://localhost:8000/search?q=*&k=100');
+        const entitiesResponse = await fetch(apiUrl('/search?q=*&k=100'));
         const entities = await entitiesResponse.json();
         
         const list = document.getElementById('existingList');
@@ -193,7 +196,7 @@ async function handleSubmit(e) {
     
     try {
         // 发送到 API
-        const response = await fetch('http://localhost:8000/api/save', {
+        const response = await fetch(apiUrl('/api/save'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -234,7 +237,7 @@ async function handleSubmit(e) {
 // 加载实体（编辑模式）
 async function loadEntity(entityId) {
     try {
-        const response = await fetch(`http://localhost:8000/entity?id=${entityId}`);
+        const response = await fetch(apiUrl(`/entity?id=${entityId}`));
         const data = await response.json();
         
         if (!data) {
@@ -443,7 +446,7 @@ async function uploadPDF(file) {
         
         updateUploadStage('正在使用 AI 分析文献内容...', 30);
         
-        const response = await fetch('http://localhost:8000/api/process-pdf', {
+        const response = await fetch(apiUrl('/api/process-pdf'), {
             method: 'POST',
             body: formData
         });
@@ -501,7 +504,7 @@ async function uploadText(file) {
         updateUploadStage('正在使用 AI 分析笔记内容...', 30);
         
         // 调用文本处理 API
-        const response = await fetch('http://localhost:8000/api/process-text', {
+        const response = await fetch(apiUrl('/api/process-text'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -593,7 +596,7 @@ async function pollBuildStatus() {
     await new Promise(r => setTimeout(r, 5000));
     
     try {
-        const response = await fetch('http://localhost:8000/health');
+        const response = await fetch(apiUrl('/health'));
         const data = await response.json();
         
         if (response.ok) {
@@ -670,7 +673,7 @@ async function extractPDFText(file) {
 
 async function extractForDeepImport(content, filename, settings) {
     // 调用后端 API 提取结构化数据
-    const response = await fetch('http://localhost:8000/api/extract-for-review', {
+    const response = await fetch(apiUrl('/api/extract-for-review'), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -762,7 +765,7 @@ async function sendDiscussionMessage() {
     // 调用 API 进行对话
     try {
         const settings = getAISettings();
-        const response = await fetch('http://localhost:8000/api/discuss', {
+        const response = await fetch(apiUrl('/api/discuss'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -853,7 +856,7 @@ async function checkCrossReferences(entities) {
         // 获取所有新实体的名称
         const newNames = entities.map(e => e.name).join(', ');
         
-        const response = await fetch('http://localhost:8000/api/cross-reference', {
+        const response = await fetch(apiUrl('/api/cross-reference'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1000,7 +1003,7 @@ async function confirmDeepImport() {
     
     try {
         // 发送到后端保存
-        const response = await fetch('http://localhost:8000/api/save-deep-import', {
+        const response = await fetch(apiUrl('/api/save-deep-import'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

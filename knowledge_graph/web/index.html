@@ -949,12 +949,16 @@
     </div>
   </div>
 
+  <script src="static/js/config.js"></script>
   <script>
+    // API 工具函数
+    const apiUrl = (path) => window.OMICKnowledge?.config?.apiUrl(path) || `http://localhost:8000${path}`;
+    
     // KB Selector functions
     async function loadKbSelector() {
       try {
         console.log('Loading KB list...');
-        const response = await fetch('http://localhost:8000/api/kb/list');
+        const response = await fetch(apiUrl('/api/kb/list'));
         console.log('Response:', response.status);
         
         if (!response.ok) {
@@ -1011,7 +1015,7 @@
 
     async function switchKb(id) {
       try {
-        const response = await fetch('http://localhost:8000/api/kb/switch', {
+        const response = await fetch(apiUrl('/api/kb/switch'), {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({id})
@@ -1125,7 +1129,7 @@
         
         if (targetKbText !== currentKbName) {
           showToast(`正在切换到知识库: ${targetKbText}...`, 'success');
-          const switchResponse = await fetch('http://localhost:8000/api/kb/switch', {
+          const switchResponse = await fetch(apiUrl('/api/kb/switch'), {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({id: targetKb})
@@ -1146,7 +1150,7 @@
 
         showToast(`正在解析: ${file.name}...`, 'success');
         
-        const response = await fetch('http://localhost:8000/api/process-pdf', {
+        const response = await fetch(apiUrl('/api/process-pdf'), {
           method: 'POST',
           body: formData
         });
@@ -1239,7 +1243,7 @@
         await new Promise(r => setTimeout(r, 3000)); // Wait 3 seconds
         
         try {
-          const response = await fetch('http://localhost:8000/health');
+          const response = await fetch(apiUrl('/health'));
           const data = await response.json();
           
           if (response.ok) {

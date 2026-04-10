@@ -1,3 +1,7 @@
+// API 配置（从 config.js 加载）
+const API_BASE = window.OMICKnowledge?.config?.apiBase || 'http://localhost:8000';
+const apiUrl = (path) => window.OMICKnowledge?.config?.apiUrl(path) || `http://localhost:8000${path}`;
+
 let app = null;
 
 function escapeHtml(text) {
@@ -32,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Try to load from API first (with cache-busting), fallback to static file
     const timestamp = Date.now();
-    let response = await fetch(`http://localhost:8000/api/graph?t=${timestamp}`, {
+    let response = await fetch(apiUrl(`/api/graph?t=${timestamp}`), {
       cache: 'no-store'
     });
     if (!response.ok) {

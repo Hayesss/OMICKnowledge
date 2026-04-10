@@ -747,6 +747,7 @@
     <span id="toastMessage">操作成功</span>
   </div>
 
+  <script src="static/js/config.js"></script>
   <script>
     // Global state
     let currentKb = null;
@@ -765,9 +766,12 @@
       }
     });
 
+    // API 配置
+    const apiUrl = (path) => window.OMICKnowledge?.config?.apiUrl(path) || `http://localhost:8000${path}`;
+    
     async function loadKnowledgeBases() {
       try {
-        const response = await fetch('http://localhost:8000/api/kb/list');
+        const response = await fetch(apiUrl('/api/kb/list'));
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
@@ -888,7 +892,7 @@
 
     async function switchKb(id) {
       try {
-        const response = await fetch('http://localhost:8000/api/kb/switch', {
+        const response = await fetch(apiUrl('/api/kb/switch'), {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({id})
@@ -948,7 +952,7 @@
       }
 
       try {
-        const response = await fetch('http://localhost:8000/api/kb/create', {
+        const response = await fetch(apiUrl('/api/kb/create'), {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -979,7 +983,7 @@
       }
 
       try {
-        const response = await fetch(`http://localhost:8000/api/kb/delete?id=${id}`, {
+        const response = await fetch(apiUrl(`/api/kb/delete?id=${id}`), {
           method: 'DELETE'
         });
 

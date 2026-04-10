@@ -591,6 +591,7 @@
     </div>
   </div>
 
+  <script src="static/js/config.js"></script>
   <script>
     // State
     let currentKb = null;
@@ -611,9 +612,12 @@
       }
     });
 
+    // API 配置
+    const apiUrl = (path) => window.OMICKnowledge?.config?.apiUrl(path) || `http://localhost:8000${path}`;
+    
     async function loadKbInfo() {
       try {
-        const response = await fetch('http://localhost:8000/api/kb/current');
+        const response = await fetch(apiUrl('/api/kb/current'));
         const data = await response.json();
         if (data.success && data.knowledge_base) {
           currentKb = data.knowledge_base;
@@ -631,7 +635,7 @@
     async function loadPapers() {
       try {
         // Load PDF import records from API
-        const response = await fetch('http://localhost:8000/api/papers');
+        const response = await fetch(apiUrl('/api/papers'));
         const data = await response.json();
         
         if (data.success) {
