@@ -9,6 +9,7 @@ import time
 import signal
 import os
 import argparse
+import socket
 from pathlib import Path
 
 # 默认配置
@@ -16,11 +17,28 @@ DEFAULT_API_PORT = int(os.environ.get('API_PORT', 8000))
 DEFAULT_WEB_PORT = int(os.environ.get('WEB_PORT', 8080))
 WEB_DIR = Path(__file__).parent.parent / "web"
 
+def is_port_available(port):
+    """检查端口是否可用"""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(('0.0.0.0', port))
+            return True
+    except OSError:
+        return False
+
+def find_available_port(start_port, max_port=65535):
+    """查找可用端口"""
+    for port in range(start_port, min(max_port, start_port + 100)):
+        if is_port_available(port):
+            return port
+    return None
+
 def get_parser():
     parser = argparse.ArgumentParser(description='启动 OMICKnowledge 服务')
     parser.add_argument('--api-port', type=int, default=DEFAULT_API_PORT, help='API 端口 (默认: 8000)')
     parser.add_argument('--web-port', type=int, default=DEFAULT_WEB_PORT, help='Web 端口 (默认: 8080)')
     parser.add_argument('--store', type=str, default='kb/omics/memory_store', help='Memory store 路径')
+    parser.add_argument('--auto-port', action='store_true', help='自动查找可用端口')
     return parser
 
 def log(msg):
@@ -33,6 +51,25 @@ def main():
     api_port = args.api_port
     web_port = args.web_port
     store_path = args.store
+    
+    # 检查端口是否可用
+    if args.auto_port or not is_port_available(api_port):
+        new_port = find_available_port(api_port)
+        if new_port and new_port != api_port:
+            log(f"端口 {api_port} 被占用，使用端口 {new_port}")
+            api_port = new_port
+        elif not is_port_available(api_port):
+            log(f"错误: 无法找到可用端口")
+            return 1
+    
+    if args.auto_port or not is_port_available(web_port):
+        new_port = find_available_port(web_port)
+        if new_port and new_port != web_port:
+            log(f"端口 {web_port} 被占用，使用端口 {new_port}")
+            web_port = new_port
+        elif not is_port_available(web_port):
+            log(f"错误: 无法找到可用端口")
+            return 1
     
     API_CMD = [sys.executable, "-m", "memory_core.server", "--store", store_path, "--port", str(api_port)]
     WEB_CMD = [sys.executable, "-m", "http.server", str(web_port)]
